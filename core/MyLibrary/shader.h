@@ -4,8 +4,6 @@
 
 namespace shader
 {
-	class Shader
-	{
-
-	};
+	extern const char* vertexShaderSource;
+	extern const char* fragmentShaderSource;
 }
