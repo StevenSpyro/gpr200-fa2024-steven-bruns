@@ -132,7 +132,6 @@ int main() {
 	glDeleteShader(fragmentShader);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	//someOpenGLFunctionThatDrawsOurTriangle();
 
 	unsigned int VAO;
 	glGenVertexArrays(1, &VAO);
