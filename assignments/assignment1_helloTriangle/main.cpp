@@ -36,8 +36,6 @@ int main() {
 		return 1;
 	}
 
-	//glBindBuffer(GL_ARRAY_BUFFER, 0);
-
 	//Initialization goes here!
 	unsigned int VAO;
 	glGenVertexArrays(1, &VAO);
@@ -45,10 +43,6 @@ int main() {
 
 	unsigned int VBO;
 	glGenBuffers(1, &VBO);
-
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
 	// 0. copy our vertices array in a buffer for OpenGL to use
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -73,6 +67,7 @@ int main() {
 	//Check for error
 	int  success;
 	char infoLog[512];
+
 	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
 
 	if (!success)
@@ -95,8 +90,6 @@ int main() {
 	}
 
 	//Create shader program, link
-//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-//	glEnableVertexAttribArray(0);
 
 	unsigned int shaderProgram = glCreateProgram();
 
@@ -114,22 +107,6 @@ int main() {
 
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
-
-//	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	
-
-//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	//glEnableVertexAttribArray(0);
-
-	// ..:: Initialization code (done once (unless your object frequently changes)) :: ..
-	// 1. bind Vertex Array Object
-	//glBindVertexArray(VAO);
-	// 2. copy our vertices array in a buffer for OpenGL to use
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	// 3. then set our vertex attributes pointers
-
 
 	//Render loop
 	while (!glfwWindowShouldClose(window))
