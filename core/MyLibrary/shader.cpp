@@ -27,10 +27,13 @@ namespace shader
         "in vec3 ourColor;\n"
         "in vec2 TexCoord;\n"
         "uniform sampler2D ourTexture;\n"
+        "uniform sampler2D texture1;\n"
+        "uniform sampler2D texture2;\n"
 		//"uniform float uTime;\n"
 		//"uniform vec4 uColor = vec4(1.0);\n"
 		"void main()\n"
 		"{\n"
+        "   FragColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.2);\n"
         "   FragColor = texture(ourTexture, TexCoord);\n"
 		//"   FragColor = Color * (sin(uTime) * 0.5 + 0.5);\n"//vec4(1.0f, 0.5f, 0.2f, 1.0f);
 		"}\n\0";
