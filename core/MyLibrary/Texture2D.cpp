@@ -45,7 +45,7 @@ namespace myLibrary
 
 	Texture2D::~Texture2D()
 	{
-
+		glDeleteTextures(1, &m_id);
 	}
 
 	void Texture2D::Bind(unsigned int slot)
