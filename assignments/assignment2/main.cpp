@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <MyLibrary/shader.h>
-#include <MyLibrary/Texture2D.h>
+#include <MyLibrary/texture2D.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "ew/external/stb_image.h"
@@ -49,6 +49,12 @@ int main() {
 		return 1;
 	}
 
+	Texture2D texture("assets/Link.png", 0, 0);
+	Texture2D texture1("assets/Water.png", 0, 0);
+
+	Shader charShader("assets/vertexShader.vs", "assets/fragmentShader.fs");
+	Shader bgShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
+
 	//Initialization goes here!
 	unsigned int VAO;
 	glGenVertexArrays(1, &VAO);
@@ -81,15 +87,20 @@ int main() {
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(7 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	Texture2D texture("assets/Link.png",0, 0);
-	Texture2D texture1("assets/Water.png", 0, 0);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	bgShader.use();
+	bgShader.setInt("texture1", 0);
 
 	//Render loop
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
 		float time = (float)glfwGetTime();
+
+		bgShader.use();
+		bgShader.setFloat("uTime", time);
 
 		//Clear framebuffer
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
@@ -99,6 +110,12 @@ int main() {
 		glBindTexture(GL_TEXTURE_2D, texture1.getID());
 
 		glBindVertexArray(VAO); 
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		charShader.use();
+		texture.Bind(GL_TEXTURE0);
+		charShader.setFloat("uTime", time);
+		texture.Bind();
 
 		//Draw Call
 		//glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -113,6 +130,8 @@ int main() {
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
 	}
