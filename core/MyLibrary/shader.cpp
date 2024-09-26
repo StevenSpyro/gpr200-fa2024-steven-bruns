@@ -1,7 +1,7 @@
 #include "shader.h"
 using namespace std;
 
-namespace shader
+namespace myLibrary
 {
 	const char* vertexShaderSource = 
         "#version 330 core\n"

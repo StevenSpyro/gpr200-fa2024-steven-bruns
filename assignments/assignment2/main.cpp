@@ -10,7 +10,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "ew/external/stb_image.h"
 
-using namespace shader;
+using namespace myLibrary;
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;

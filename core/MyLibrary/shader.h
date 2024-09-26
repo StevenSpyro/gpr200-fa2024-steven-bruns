@@ -8,7 +8,7 @@
 
 #include"../ew/external/glad.h"
 
-namespace shader
+namespace myLibrary
 {
 	extern const char* vertexShaderSource;
 	extern const char* fragmentShaderSource;
