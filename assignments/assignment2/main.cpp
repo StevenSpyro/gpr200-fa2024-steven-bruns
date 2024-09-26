@@ -24,7 +24,6 @@ float vertices[] =
 	-0.5f,  0.5f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, // top left
 };
 
-
 unsigned int indices[] = 
 { 
 	0, 1, 3,   // first triangle
@@ -91,6 +90,7 @@ int main() {
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+
 	bgShader.use();
 	bgShader.setInt("texture1", 0);
 	bgShader.setInt("texture2", 1);
@@ -101,32 +101,29 @@ int main() {
 		glfwPollEvents();
 		float time = (float)glfwGetTime();
 
+		//Clear framebuffer
+		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT);
+
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1.getID());
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2.getID());
 
 		bgShader.use();
+
 		bgShader.setFloat("uTime", time);
-
-		charShader.use();
-
-		//Clear framebuffer
-		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture1.getID());
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		charShader.use();
-		texture.Bind(GL_TEXTURE0);
-		charShader.setFloat("uTime", time);
-		texture.Bind();
 
-		//Drawing happens here!
+		texture.Bind(GL_TEXTURE0);
+
+		charShader.setFloat("uTime", time);
+
+		texture.Bind();
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
