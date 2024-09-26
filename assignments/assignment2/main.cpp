@@ -16,8 +16,6 @@ using namespace myLibrary;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
-Shader ourShader("vertexShader.vs", "fragmentShader.fr");
-
 float vertices[] =
 {    // positions         // colors           // texture coords
 	 0.5f,  0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // top right
