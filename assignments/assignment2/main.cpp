@@ -6,6 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <MyLibrary/shader.h>
+#include <MyLibrary/Texture2D.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "ew/external/stb_image.h"
@@ -14,6 +15,8 @@ using namespace myLibrary;
 
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
+
+Shader ourShader("vertexShader.vs", "fragmentShader.fr");
 
 float vertices[] =
 {    // positions         // colors           // texture coords
@@ -80,6 +83,8 @@ int main() {
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(7 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
+	Texture2D texture("assets/Link.png",0, 0);
+	Texture2D texture1("assets/Water.png", 0, 0);
 
 
 	//Render loop
@@ -91,6 +96,9 @@ int main() {
 		//Clear framebuffer
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture1.getID());
 
 		glBindVertexArray(VAO); 
 
