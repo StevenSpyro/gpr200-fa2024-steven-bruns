@@ -13,7 +13,7 @@ void main()
     vec3 pos = aPos;  
     pos.y += sin(uTime * 1.5 + pos.x) / 2.0;
 
-    gl_Position = vec4(pos, 1.0);  
+    gl_Position = vec4(pos, 1.5);  
 
     ourColor = aColor;  
     TexCoord = aTexCoord;  
