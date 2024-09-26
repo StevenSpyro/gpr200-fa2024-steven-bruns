@@ -51,6 +51,7 @@ int main() {
 
 	Texture2D texture("assets/Link.png", 0, 0);
 	Texture2D texture1("assets/Water.png", 0, 0);
+	Texture2D texture2("assets/awesomeFace.png", 0, 0);
 
 	Shader charShader("assets/vertexShader.vs", "assets/fragmentShader.fs");
 	Shader bgShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
@@ -92,6 +93,7 @@ int main() {
 
 	bgShader.use();
 	bgShader.setInt("texture1", 0);
+	bgShader.setInt("texture2", 1);
 
 	//Render loop
 	while (!glfwWindowShouldClose(window))
@@ -99,8 +101,15 @@ int main() {
 		glfwPollEvents();
 		float time = (float)glfwGetTime();
 
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture1.getID());
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2.getID());
+
 		bgShader.use();
 		bgShader.setFloat("uTime", time);
+
+		charShader.use();
 
 		//Clear framebuffer
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
@@ -109,22 +118,13 @@ int main() {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture1.getID());
 
-		glBindVertexArray(VAO); 
+		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 		charShader.use();
 		texture.Bind(GL_TEXTURE0);
 		charShader.setFloat("uTime", time);
 		texture.Bind();
-
-		//Draw Call
-		//glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		//glActiveTexture(GL_TEXTURE0); 
-
-		//glBindTexture(GL_TEXTURE_2D, texture);
-
-		//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
 		//Drawing happens here!
 
