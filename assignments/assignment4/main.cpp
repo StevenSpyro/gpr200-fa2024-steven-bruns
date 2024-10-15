@@ -5,6 +5,8 @@
 #include <ew/ewMath/ewMath.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <MyLibrary/shader.h>
 #include <MyLibrary/texture2D.h>
 
@@ -49,7 +51,19 @@ int main() {
 		return 1;
 	}
 
-	Texture2D texture("assets/Link.png", 0, 0);
+	/*
+	glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
+	glm::mat4 trans = glm::mat4(1.0f);
+	trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 0.0f));
+	vec = trans * vec;
+	std::cout << vec.x << vec.y << vec.z << std::endl;
+
+	glm::mat4 trans = glm::mat4(1.0f);
+	trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
+	trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5)); 
+	*/
+
+	Texture2D texture0("assets/container.png", 0, 0);
 	Texture2D texture1("assets/Water.png", 0, 0);
 	Texture2D texture2("assets/awesomeFace.png", 0, 0);
 
@@ -57,15 +71,12 @@ int main() {
 	Shader bgShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
 
 	//Initialization goes here!
-	unsigned int VAO;
+	unsigned int VBO, VAO, EBO;
 	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
-
-	unsigned int VBO;
 	glGenBuffers(1, &VBO);
-
-	unsigned int EBO;
 	glGenBuffers(1, &EBO);
+
+	glBindVertexArray(VAO);
 
 	// 0. copy our vertices array in a buffer for OpenGL to use
 
@@ -82,15 +93,12 @@ int main() {
 	glEnableVertexAttribArray(0);
 
 	//COLOR(RGBA)
-	glVertexAttribPointer(1, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(sizeof(float) * 3));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(sizeof(float) * 3));
 	glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(7 * sizeof(float)));
+	// Texture coords
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(2);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 
 	bgShader.use();
 	bgShader.setInt("texture1", 0);
@@ -103,33 +111,40 @@ int main() {
 		float time = (float)glfwGetTime();
 
 		//Clear framebuffer
-		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1.getID());
+		glBindTexture(GL_TEXTURE_2D, texture0.getID());
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2.getID());
+		glBindTexture(GL_TEXTURE_2D, texture1.getID());
+
+		glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+		transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
+		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
 
 		bgShader.use();
 
-		bgShader.setFloat("uTime", time);
+		unsigned int transformLoc = glGetUniformLocation(bgShader.ID, "transform");
+		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+
+		//bgShader.setFloat("uTime", time);
 
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-		charShader.use();
+		//charShader.use();
 
-		texture.Bind(GL_TEXTURE0);
+		//texture.Bind(GL_TEXTURE0);
 
-		charShader.setFloat("uTime", time);
+		//charShader.setFloat("uTime", time);
 
-		texture.Bind();
+		//texture.Bind();
 
-		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//glBindVertexArray(VAO);
+		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-		glBindVertexArray(0);
+		//glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
 	}

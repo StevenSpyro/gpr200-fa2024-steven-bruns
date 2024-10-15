@@ -14,8 +14,8 @@ uniform float uTime = 1.0;
 
 void main()
 {
-	vec2 tiledTexCoord1 = TexCoord * 10.0; 
-    vec2 tiledTexCoord2 = TexCoord * 10.0; 
+	vec2 tiledTexCoord1 = TexCoord * 1.0; 
+    vec2 tiledTexCoord2 = TexCoord * 1.0; 
 
     vec4 texColor1 = texture(texture1, tiledTexCoord1);
     vec4 texColor2 = texture(texture2, tiledTexCoord2);

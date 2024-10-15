@@ -20,7 +20,7 @@ namespace myLibrary
 
 		stbi_set_flip_vertically_on_load(true);
 
-		//unsigned int texture; m_id
+		//unsigned int texture; m_id;
 		//glGenTextures(1, &texture);
 		//glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -30,7 +30,7 @@ namespace myLibrary
 
 		if (data)
 		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
 		else
