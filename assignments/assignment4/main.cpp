@@ -97,6 +97,8 @@ int main() {
 		return 1;
 	}
 
+	glEnable(GL_DEPTH_TEST);
+
 	/*
 	glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
 	glm::mat4 trans = glm::mat4(1.0f);
@@ -109,7 +111,7 @@ int main() {
 	trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5)); 
 	*/
 
-	Texture2D texture0("assets/container.png", 0, 0); 
+	Texture2D texture0("assets/container.jpg", 0, 0); 
 	Texture2D texture1("assets/awesomeFace.png", 0, 0);
 	Texture2D texture2("assets/Water.png", 0, 0);
 
@@ -164,6 +166,7 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClear(GL_DEPTH_BUFFER_BIT);
 
+		//Bind 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture1.getID());
 		glActiveTexture(GL_TEXTURE1);
@@ -174,7 +177,8 @@ int main() {
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = glm::mat4(1.0f);
 		glm::mat4 projection = glm::mat4(1.0f);
-		model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		//model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 		projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
 
@@ -184,6 +188,9 @@ int main() {
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
 
+		bgShader.use();
+		bgShader.setMat4("model", model);
+		bgShader.setMat4("view", view);
 		bgShader.setMat4("projection", projection);
 
 		//glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
