@@ -79,6 +79,20 @@ unsigned int indices[] =
 	1, 2, 3    // second triangle
 };
 
+glm::vec3 cubePositions[] = 
+{
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
+};
+
 
 int main() {
 	printf("Initializing...");
@@ -119,10 +133,11 @@ int main() {
 	Shader bgShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
 
 	//Initialization goes here!
-	unsigned int VBO, VAO, EBO;
+	//unsigned int VBO, VAO, EBO;
+	unsigned int VBO, VAO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	//glGenBuffers(1, &EBO);
 
 	glBindVertexArray(VAO);
 
@@ -131,8 +146,8 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// 1. then set the vertex attributes pointers
 
@@ -148,9 +163,9 @@ int main() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	bgShader.use();
-	bgShader.setInt("texture1", 0);
-	bgShader.setInt("texture2", 1);
+	//bgShader.use();
+	//bgShader.setInt("texture1", 0);
+	//bgShader.setInt("texture2", 1);
 
 	//Render loop
 	while (!glfwWindowShouldClose(window))
@@ -162,9 +177,8 @@ int main() {
 		float time = (float)glfwGetTime();
 
 		//Clear framebuffer
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		glClear(GL_DEPTH_BUFFER_BIT);
+		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Bind 
 		glActiveTexture(GL_TEXTURE0);
@@ -172,8 +186,12 @@ int main() {
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture2.getID());
 
-		bgShader.use();
+		//texture0.Bind(GL_TEXTURE0); 
+		//texture1.Bind(GL_TEXTURE1); 
 
+		//bgShader.use();
+
+		/*
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = glm::mat4(1.0f);
 		glm::mat4 projection = glm::mat4(1.0f);
@@ -187,11 +205,32 @@ int main() {
 
 		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
+		*/
 
-		bgShader.use();
-		bgShader.setMat4("model", model);
-		bgShader.setMat4("view", view);
-		bgShader.setMat4("projection", projection);
+		charShader.use();
+
+		texture0.Bind(GL_TEXTURE0);
+
+		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 view = glm::mat4(1.0f);
+		glm::mat4 projection = glm::mat4(1.0f);
+
+
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+		projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+		model = glm::rotate(model, time * glm::radians(45.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+
+		charShader.setMat4("projection", projection);
+		charShader.setMat4("view", view);
+
+		int viewLoc = glGetUniformLocation(charShader.ID, "projection");
+
+		int projectionLoc = glGetUniformLocation(charShader.ID, "projection");
+		charShader.setMat4("projection", projection);
+
+		//bgShader.setMat4("model", model);
+		//bgShader.setMat4("view", view);
+		//bgShader.setMat4("projection", projection);
 
 		//glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
 		//transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
@@ -212,9 +251,21 @@ int main() {
 
 		glBindVertexArray(VAO);
 
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		for (unsigned int i = 0; i < 10; i++)
+		{
+			// calculate the model matrix for each object and pass it to shader before drawing
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, cubePositions[i]);
+			float angle = 20.0f * i;
+			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+			bgShader.setMat4("model", model);
 
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+
+		glBindVertexArray(0);
+
+		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 		//charShader.use();
 
