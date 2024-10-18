@@ -18,12 +18,22 @@ using namespace myLibrary;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
+/*
 float vertices[] =
 {    // positions         // colors           // texture coords
 	 1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // top right
 	 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, // bottom right
 	-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, // bottom left
 	-1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, // top left
+};
+*/
+
+float vertices[] = {
+	// positions          // texture coords
+	 0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
+	 0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
+	-0.5f, -0.5f, 0.0f,   0.0f, 0.0f, // bottom left
+	-0.5f,  0.5f, 0.0f,   0.0f, 1.0f  // top left 
 };
 
 
@@ -108,6 +118,9 @@ int main() {
 	while (!glfwWindowShouldClose(window))
 	{
 		glfwPollEvents();
+
+		void processInput(GLFWwindow * window);
+
 		float time = (float)glfwGetTime();
 
 		//Clear framebuffer
@@ -122,6 +135,12 @@ int main() {
 		glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
 		transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
 		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+
+		//glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
+		//glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 
 		bgShader.use();
 
