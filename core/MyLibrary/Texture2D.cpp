@@ -9,8 +9,6 @@ namespace myLibrary
 		//filterMode: GL_NEAREST, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR, etc
 		//wrapMode; GL_REPEAT, GL_CLAMP_TO_BORDER, etc
 
-		unsigned int texture1, texture2;
-
 		glGenTextures(1, &m_id);
 		glBindTexture(GL_TEXTURE_2D, m_id);
 
