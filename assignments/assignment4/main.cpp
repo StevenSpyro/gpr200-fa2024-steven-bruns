@@ -28,7 +28,8 @@ float vertices[] =
 };
 */
 
-float vertices[] = {
+float vertices[] = 
+{
 	// positions          // texture coords
 	 0.5f,  0.5f, 0.0f,   1.0f, 1.0f, // top right
 	 0.5f, -0.5f, 0.0f,   1.0f, 0.0f, // bottom right
@@ -73,7 +74,7 @@ int main() {
 	trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5)); 
 	*/
 
-	Texture2D texture0("assets/container.png", 0, 0);
+	Texture2D texture0("assets/container.png", 0, 0); 
 	Texture2D texture1("assets/Water.png", 0, 0);
 	Texture2D texture2("assets/awesomeFace.png", 0, 0);
 
@@ -128,24 +129,34 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture0.getID());
-		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture1.getID());
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture2.getID());
 
-		glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-		transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
-		transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+		bgShader.use();
+
 
 		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 view = glm::mat4(1.0f);
+		glm::mat4 projection = glm::mat4(1.0f);
 		model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+		projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+
+		//glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
+		//transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
+		//transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		//glm::mat4 model = glm::mat4(1.0f);
+		//model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 
 		//glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
 		//glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 
-		bgShader.use();
+		//bgShader.use();
 
-		unsigned int transformLoc = glGetUniformLocation(bgShader.ID, "transform");
-		glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
+		//unsigned int transformLoc = glGetUniformLocation(bgShader.ID, "transform");
+		//glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
 
 		//bgShader.setFloat("uTime", time);
 
