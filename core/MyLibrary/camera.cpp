@@ -2,7 +2,7 @@
 
 
 //Vector Constructor
-Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
+Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) : MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 {
 	Position = position;
 	WorldUp = up;
@@ -36,7 +36,7 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 	}
 	if (direction == BACKWARD)
 	{
-		Position == Front * velocity;
+		Position -= Front * velocity;
 	}
 	if (direction == LEFT)
 	{

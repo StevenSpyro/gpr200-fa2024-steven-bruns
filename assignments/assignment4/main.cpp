@@ -21,16 +21,6 @@ const int SCREEN_HEIGHT = 600;
 
 Camera cam(glm::vec3(0.0f, 0.0f, 3.0f));
 
-/*
-float vertices[] =
-{    // positions         // colors           // texture coords
-	 1.0f,  1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, // top right
-	 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f, // bottom right
-	-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, // bottom left
-	-1.0f,  1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, // top left
-};
-*/
-
 glm::vec3 cubePositions[] = 
 {
 		glm::vec3(0.0f,  0.0f,  0.0f),
@@ -76,18 +66,6 @@ int main() {
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	/*
-	glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
-	glm::mat4 trans = glm::mat4(1.0f);
-	trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 0.0f));
-	vec = trans * vec;
-	std::cout << vec.x << vec.y << vec.z << std::endl;
-
-	glm::mat4 trans = glm::mat4(1.0f);
-	trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
-	trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5)); 
-	*/
 
 	Texture2D texture0("assets/container.jpg", 0, 0); 
 	Texture2D texture1("assets/awesomeFace.png", 0, 0);
@@ -209,22 +187,6 @@ int main() {
 
 		//bgShader.use();
 
-		/*
-		glm::mat4 model = glm::mat4(1.0f);
-		glm::mat4 view = glm::mat4(1.0f);
-		glm::mat4 projection = glm::mat4(1.0f);
-		//model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, (float)glfwGetTime() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-		projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
-
-		unsigned int modelLoc = glGetUniformLocation(bgShader.ID, "model");
-		unsigned int viewLoc = glGetUniformLocation(bgShader.ID, "view");
-
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-		glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
-		*/
-
 		charShader.use();
 
 		texture0.Bind(GL_TEXTURE0);
@@ -250,27 +212,6 @@ int main() {
 		int projectionLoc = glGetUniformLocation(charShader.ID, "projection");
 		charShader.setMat4("projection", projection);
 
-		//bgShader.setMat4("model", model);
-		//bgShader.setMat4("view", view);
-		//bgShader.setMat4("projection", projection);
-
-		//glm::mat4 transform = glm::mat4(1.0f); // make sure to initialize matrix to identity matrix first
-		//transform = glm::translate(transform, glm::vec3(0.5f, -0.5f, 0.0f));
-		//transform = glm::rotate(transform, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-
-		//glm::mat4 model = glm::mat4(1.0f);
-		//model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-
-		//glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
-		//glm::mat4 proj = glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
-
-		//bgShader.use();
-
-		//unsigned int transformLoc = glGetUniformLocation(bgShader.ID, "transform");
-		//glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(transform));
-
-		//bgShader.setFloat("uTime", time);
-
 		glBindVertexArray(VAO);
 
 		for (unsigned int i = 0; i < 10; i++)
@@ -285,25 +226,15 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
 
-		glBindVertexArray(0);
-
-		//glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-
-		//charShader.use();
-
-		//texture.Bind(GL_TEXTURE0);
-
-		//charShader.setFloat("uTime", time);
-
-		//texture.Bind();
-
-		//glBindVertexArray(VAO);
-		//glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-
-		//glBindVertexArray(0);
+		glfwPollEvents();
 
 		glfwSwapBuffers(window);
 	}
+
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
+	glfwTerminate();
 
 	printf("Shutting down...");
 }
