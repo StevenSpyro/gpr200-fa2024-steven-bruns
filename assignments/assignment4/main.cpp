@@ -93,6 +93,30 @@ glm::vec3 cubePositions[] =
 		glm::vec3(-1.3f,  1.0f, -1.5f)
 };
 
+// camera
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+void processInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+		glfwSetWindowShouldClose(window, true);
+
+	float cameraSpeed = static_cast<float>(2.5 * deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+		cameraPos += cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+		cameraPos -= cameraSpeed * cameraFront;
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+}
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
 
 int main() {
 	printf("Initializing...");
@@ -127,7 +151,7 @@ int main() {
 
 	Texture2D texture0("assets/container.jpg", 0, 0); 
 	Texture2D texture1("assets/awesomeFace.png", 0, 0);
-	Texture2D texture2("assets/Water.png", 0, 0);
+	Texture2D texture2("assets/awesomeFace.png", 0, 0);
 
 	Shader charShader("assets/vertexShader.vs", "assets/fragmentShader.fs");
 	Shader bgShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
@@ -172,7 +196,11 @@ int main() {
 	{
 		glfwPollEvents();
 
-		void processInput(GLFWwindow * window);
+		float currentFrame = static_cast<float>(glfwGetTime());
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+
+		processInput(window);
 
 		float time = (float)glfwGetTime();
 
@@ -211,17 +239,21 @@ int main() {
 
 		texture0.Bind(GL_TEXTURE0);
 
-		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = glm::mat4(1.0f);
+		float radius = 10.0f;
+		float camX = static_cast<float>(sin(glfwGetTime()) * radius);
+		float camZ = static_cast<float>(sin(glfwGetTime()) * radius);
+		view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+
+
+		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 projection = glm::mat4(1.0f);
 
-
-		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
 		projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
 		model = glm::rotate(model, time * glm::radians(45.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 
 		charShader.setMat4("projection", projection);
-		charShader.setMat4("view", view);
 
 		int viewLoc = glGetUniformLocation(charShader.ID, "projection");
 
