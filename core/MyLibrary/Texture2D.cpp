@@ -6,9 +6,6 @@ namespace myLibrary
 {
 	Texture2D::Texture2D(const char* filePath, int filterMode, int wrapMode)
 	{
-		//filterMode: GL_NEAREST, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR, etc
-		//wrapMode; GL_REPEAT, GL_CLAMP_TO_BORDER, etc
-
 		glGenTextures(1, &m_id);
 		glBindTexture(GL_TEXTURE_2D, m_id);
 
@@ -19,10 +16,6 @@ namespace myLibrary
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 		stbi_set_flip_vertically_on_load(true);
-
-		//unsigned int texture; m_id;
-		//glGenTextures(1, &texture);
-		//glBindTexture(GL_TEXTURE_2D, texture);
 
 		int width, height, nrChannels;
 

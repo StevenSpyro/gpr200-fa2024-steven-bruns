@@ -19,6 +19,8 @@ using namespace myLibrary;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
+Camera cam(glm::vec3(0.0f, 0.0f, 3.0f));
+
 /*
 float vertices[] =
 {    // positions         // colors           // texture coords
@@ -29,7 +31,72 @@ float vertices[] =
 };
 */
 
-float vertices[] = {
+glm::vec3 cubePositions[] = 
+{
+		glm::vec3(0.0f,  0.0f,  0.0f),
+		glm::vec3(2.0f,  5.0f, -15.0f),
+		glm::vec3(-1.5f, -2.2f, -2.5f),
+		glm::vec3(-3.8f, -2.0f, -12.3f),
+		glm::vec3(2.4f, -0.4f, -3.5f),
+		glm::vec3(-1.7f,  3.0f, -7.5f),
+		glm::vec3(1.3f, -2.0f, -2.5f),
+		glm::vec3(1.5f,  2.0f, -2.5f),
+		glm::vec3(1.5f,  0.2f, -1.5f),
+		glm::vec3(-1.3f,  1.0f, -1.5f)
+};
+
+// camera
+//glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+//glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+//glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+void processInput(GLFWwindow* window);
+
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
+
+
+int main() {
+	printf("Initializing...");
+	if (!glfwInit()) {
+		printf("GLFW failed to init!");
+		return 1;
+	}
+	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Hello Triangle", NULL, NULL);
+	if (window == NULL) {
+		printf("GLFW failed to create window");
+		return 1;
+	}
+	glfwMakeContextCurrent(window);
+	if (!gladLoadGL(glfwGetProcAddress)) {
+		printf("GLAD Failed to load GL headers");
+		return 1;
+	}
+
+	glEnable(GL_BLEND);
+	glEnable(GL_DEPTH_TEST);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	/*
+	glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
+	glm::mat4 trans = glm::mat4(1.0f);
+	trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 0.0f));
+	vec = trans * vec;
+	std::cout << vec.x << vec.y << vec.z << std::endl;
+
+	glm::mat4 trans = glm::mat4(1.0f);
+	trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
+	trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5)); 
+	*/
+
+	Texture2D texture0("assets/container.jpg", 0, 0); 
+	Texture2D texture1("assets/awesomeFace.png", 0, 0);
+	Texture2D texture2("assets/awesomeFace.png", 0, 0);
+
+	Shader charShader("assets/vertexShader.vs", "assets/fragmentShader.fs");
+	Shader bgShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
+
+	float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
 		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
@@ -71,98 +138,20 @@ float vertices[] = {
 		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-};
+	};
 
-
-unsigned int indices[] = 
-{ 
-	0, 1, 3,   // first triangle
-	1, 2, 3    // second triangle
-};
-
-glm::vec3 cubePositions[] = 
-{
-		glm::vec3(0.0f,  0.0f,  0.0f),
-		glm::vec3(2.0f,  5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3(2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3(1.3f, -2.0f, -2.5f),
-		glm::vec3(1.5f,  2.0f, -2.5f),
-		glm::vec3(1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f)
-};
-
-// camera
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
-void processInput(GLFWwindow* window)
-{
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, true);
-
-	float cameraSpeed = static_cast<float>(2.5 * deltaTime);
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		cameraPos += cameraSpeed * cameraFront;
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		cameraPos -= cameraSpeed * cameraFront;
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-}
-
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
-
-
-int main() {
-	printf("Initializing...");
-	if (!glfwInit()) {
-		printf("GLFW failed to init!");
-		return 1;
-	}
-	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Hello Triangle", NULL, NULL);
-	if (window == NULL) {
-		printf("GLFW failed to create window");
-		return 1;
-	}
-	glfwMakeContextCurrent(window);
-	if (!gladLoadGL(glfwGetProcAddress)) {
-		printf("GLAD Failed to load GL headers");
-		return 1;
-	}
-
-	glEnable(GL_DEPTH_TEST);
-
-	/*
-	glm::vec4 vec(1.0f, 0.0f, 0.0f, 1.0f);
-	glm::mat4 trans = glm::mat4(1.0f);
-	trans = glm::translate(trans, glm::vec3(1.0f, 1.0f, 0.0f));
-	vec = trans * vec;
-	std::cout << vec.x << vec.y << vec.z << std::endl;
-
-	glm::mat4 trans = glm::mat4(1.0f);
-	trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
-	trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5)); 
-	*/
-
-	Texture2D texture0("assets/container.jpg", 0, 0); 
-	Texture2D texture1("assets/awesomeFace.png", 0, 0);
-	Texture2D texture2("assets/awesomeFace.png", 0, 0);
-
-	Shader charShader("assets/vertexShader.vs", "assets/fragmentShader.fs");
-	Shader bgShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
+	unsigned int indices[] =
+	{
+		0, 1, 3,   // first triangle
+		1, 2, 3    // second triangle
+	};
 
 	//Initialization goes here!
-	//unsigned int VBO, VAO, EBO;
-	unsigned int VBO, VAO;
+	unsigned int VBO, VAO, EBO;
+	//unsigned int VBO, VAO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
-	//glGenBuffers(1, &EBO);
+	glGenBuffers(1, &EBO);
 
 	glBindVertexArray(VAO);
 
@@ -171,8 +160,8 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	//glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	//glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// 1. then set the vertex attributes pointers
 
@@ -317,4 +306,29 @@ int main() {
 	}
 
 	printf("Shutting down...");
+}
+
+void processInput(GLFWwindow* window)
+{
+	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	{
+		glfwSetWindowShouldClose(window, true);
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+	{
+		cam.ProcessKeyboard(FORWARD, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+	{
+		cam.ProcessKeyboard(BACKWARD, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+	{
+		cam.ProcessKeyboard(LEFT, deltaTime);
+	}
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+	{
+		cam.ProcessKeyboard(RIGHT, deltaTime);
+	}
 }
