@@ -21,25 +21,6 @@ const int SCREEN_HEIGHT = 600;
 
 Camera cam(glm::vec3(0.0f, 0.0f, 3.0f));
 
-glm::vec3 cubePositions[] = 
-{
-		glm::vec3(0.0f,  0.0f,  0.0f),
-		glm::vec3(2.0f,  5.0f, -15.0f),
-		glm::vec3(-1.5f, -2.2f, -2.5f),
-		glm::vec3(-3.8f, -2.0f, -12.3f),
-		glm::vec3(2.4f, -0.4f, -3.5f),
-		glm::vec3(-1.7f,  3.0f, -7.5f),
-		glm::vec3(1.3f, -2.0f, -2.5f),
-		glm::vec3(1.5f,  2.0f, -2.5f),
-		glm::vec3(1.5f,  0.2f, -1.5f),
-		glm::vec3(-1.3f,  1.0f, -1.5f)
-};
-
-// camera
-//glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-//glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-//glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
 void processInput(GLFWwindow* window);
 
 float deltaTime = 0.0f;
@@ -52,7 +33,7 @@ int main() {
 		printf("GLFW failed to init!");
 		return 1;
 	}
-	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Hello Triangle", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Assignment 4", NULL, NULL);
 	if (window == NULL) {
 		printf("GLFW failed to create window");
 		return 1;
@@ -66,10 +47,7 @@ int main() {
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	Texture2D texture0("assets/container.jpg", 0, 0); 
-	Texture2D texture1("assets/awesomeFace.png", 0, 0);
-	Texture2D texture2("assets/awesomeFace.png", 0, 0);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	Shader charShader("assets/vertexShader.vs", "assets/fragmentShader.fs");
 	Shader bgShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
@@ -124,6 +102,20 @@ int main() {
 		1, 2, 3    // second triangle
 	};
 
+	glm::vec3 cubePositions[] =
+	{
+			glm::vec3(0.0f,  0.0f,  0.0f),
+			glm::vec3(2.0f,  5.0f, -15.0f),
+			glm::vec3(-1.5f, -2.2f, -2.5f),
+			glm::vec3(-3.8f, -2.0f, -12.3f),
+			glm::vec3(2.4f, -0.4f, -3.5f),
+			glm::vec3(-1.7f,  3.0f, -7.5f),
+			glm::vec3(1.3f, -2.0f, -2.5f),
+			glm::vec3(1.5f,  2.0f, -2.5f),
+			glm::vec3(1.5f,  0.2f, -1.5f),
+			glm::vec3(-1.3f,  1.0f, -1.5f)
+	};
+
 	//Initialization goes here!
 	unsigned int VBO, VAO, EBO;
 	//unsigned int VBO, VAO;
@@ -147,23 +139,21 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
-	//COLOR(RGBA)
-	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 9 * sizeof(float), (void*)(sizeof(float) * 3));
-	//glEnableVertexAttribArray(1);
-
 	// Texture coords
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	//bgShader.use();
-	//bgShader.setInt("texture1", 0);
-	//bgShader.setInt("texture2", 1);
+	Texture2D texture0("assets/container.jpg", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB);
+	Texture2D texture1("assets/awesomeface.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB);
+	Texture2D texture2("assets/awesomeface.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB);
+
+	bgShader.Shader::use();
+	bgShader.setInt("texture1", 0);
+	bgShader.setInt("texture2", 1);
 
 	//Render loop
 	while (!glfwWindowShouldClose(window))
 	{
-		glfwPollEvents();
-
 		float currentFrame = static_cast<float>(glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -177,24 +167,24 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Bind 
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texture1.getID());
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, texture2.getID());
+		//glActiveTexture(GL_TEXTURE0);
+		//glBindTexture(GL_TEXTURE_2D, texture1.getID());
+		//glActiveTexture(GL_TEXTURE1);
+		//glBindTexture(GL_TEXTURE_2D, texture2.getID());
 
-		//texture0.Bind(GL_TEXTURE0); 
-		//texture1.Bind(GL_TEXTURE1); 
+		texture0.Texture2D::Bind(GL_TEXTURE0); 
+		texture1.Texture2D::Bind(GL_TEXTURE1); 
 
 		//bgShader.use();
 
-		charShader.use();
+		bgShader.Shader::use();
 
-		texture0.Bind(GL_TEXTURE0);
+		//texture0.Bind(GL_TEXTURE0);
 
 		glm::mat4 view = glm::mat4(1.0f);
 		float radius = 10.0f;
 		float camX = static_cast<float>(sin(glfwGetTime()) * radius);
-		float camZ = static_cast<float>(sin(glfwGetTime()) * radius);
+		float camZ = static_cast<float>(cos(glfwGetTime()) * radius);
 		view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
 
 
@@ -202,16 +192,22 @@ int main() {
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 projection = glm::mat4(1.0f);
 
-		projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
-		model = glm::rotate(model, time * glm::radians(45.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+		//projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
+		//model = glm::rotate(model, time * glm::radians(45.0f), glm::vec3(0.5f, 1.0f, 0.0f));
 
-		charShader.setMat4("projection", projection);
+		//int viewLoc = glGetUniformLocation(bgShader.ID, "projection");
 
-		int viewLoc = glGetUniformLocation(charShader.ID, "projection");
+		//int projectionLoc = glGetUniformLocation(bgShader.ID, "projection");
+		//bgShader.setMat4("projection", projection);
 
-		int projectionLoc = glGetUniformLocation(charShader.ID, "projection");
-		charShader.setMat4("projection", projection);
+		//glm::mat4 projection = glm::perspective(glm::radians(cam.Zoom), 800.0f / 600.0f, 0.1f, 1000.0f);
+		bgShader.setMat4("projection", projection);
 
+		//glm::mat4 view = cam.GetViewMatrix();
+		bgShader.setMat4("view", view);
+
+
+		//Draw
 		glBindVertexArray(VAO);
 
 		for (unsigned int i = 0; i < 10; i++)

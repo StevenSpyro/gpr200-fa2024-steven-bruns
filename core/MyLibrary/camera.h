@@ -1,16 +1,23 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include"../ew/external/glad.h"
+#include "..\ew\external\glad.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 enum Camera_Movement
 {
 	FORWARD,
 	BACKWARD,
 	LEFT,
-	RIGHT
+	RIGHT,
+	UP,
+	DOWN,
+	WALK,
+	SPRINT
+
+
 };
 
 //Camera values

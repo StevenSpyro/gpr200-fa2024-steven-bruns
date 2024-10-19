@@ -4,16 +4,16 @@ using namespace std;
 
 namespace myLibrary
 {
-	Texture2D::Texture2D(const char* filePath, int filterMode, int wrapMode)
+	Texture2D::Texture2D(const char* filePath, int filterModeMin, int filterModeMag, int wrapModeS, int wrapModeT, int alpha)
 	{
 		glGenTextures(1, &m_id);
 		glBindTexture(GL_TEXTURE_2D, m_id);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapModeS);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapModeT);
 
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterMode);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterMode);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterModeMin);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterModeMag);
 
 		stbi_set_flip_vertically_on_load(true);
 
@@ -23,7 +23,7 @@ namespace myLibrary
 
 		if (data)
 		{
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+			glTexImage2D(GL_TEXTURE_2D, 0, alpha, width, height, 0, alpha, GL_UNSIGNED_BYTE, data);
 			glGenerateMipmap(GL_TEXTURE_2D);
 		}
 		else
@@ -38,7 +38,7 @@ namespace myLibrary
 
 	Texture2D::~Texture2D()
 	{
-		glDeleteTextures(1, &m_id);
+		//glDeleteTextures(1, &m_id);
 	}
 
 	void Texture2D::Bind(unsigned int slot)

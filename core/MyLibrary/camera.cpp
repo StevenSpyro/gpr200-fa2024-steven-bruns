@@ -9,6 +9,11 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) : Movem
 	Yaw = yaw;
 	Pitch = pitch;
 	updateCameraVectors();
+
+	Front = glm::vec3(0.0f, 0.0f, -1.0f);
+	MovementSpeed = SPEED;
+	MouseSensitivity = SENSITIVITY;
+	Zoom = ZOOM;
 }
 
 //Scalar Values
@@ -19,6 +24,11 @@ Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float u
 	Yaw = yaw;
 	Pitch = pitch;
 	updateCameraVectors();
+
+	Front = glm::vec3(0.0f, 0.0f, -1.0f);
+	MovementSpeed = SPEED;
+	MouseSensitivity = SENSITIVITY;
+	Zoom = ZOOM;
 }
 
 glm::mat4 Camera::GetViewMatrix()
@@ -45,6 +55,10 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 	if (direction == RIGHT)
 	{
 		Position += Right * velocity;
+	}
+	if (direction == UP)
+	{
+		Position += Up * velocity;
 	}
 }
 
