@@ -9,6 +9,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <MyLibrary/shader.h>
 #include <MyLibrary/texture2D.h>
+#include <MyLibrary/camera.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #include "ew/external/stb_image.h"
