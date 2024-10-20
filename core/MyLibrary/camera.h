@@ -6,6 +6,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+//Directions
 enum Camera_Movement
 {
 	FORWARD,
@@ -16,23 +17,21 @@ enum Camera_Movement
 	DOWN,
 	WALK,
 	SPRINT
-
-
 };
 
-//Camera values
+// Camera values
 const float YAW = -90.0f;
 const float PITCH = 0.0f;
 const float SPEED = 7.5f;
 const float SENSITIVITY = 0.1f;
 const float ZOOM = 45.0f;
 
-//Camera class. Calculates angles, vectors, and Matrices. Processes Input.
+// Camera class. Calculates angles, vectors, and Matrices. Processes Input.
 
 class Camera
 {
 public:
-	//Camera Attributes
+	// Camera Attributes
 	glm::vec3 Position;
 	glm::vec3 Front;
 	glm::vec3 Up;
@@ -43,31 +42,31 @@ public:
 	float Yaw;
 	float Pitch;
 
-	//Camera Options
+	// Camera Options
 	float MovementSpeed;
 	float MouseSensitivity;
 	float Zoom;
 
-	//Vector Constructor
+	// Vector Constructor
 	Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH);
 
-	//Scalar Values
+	// Scalar Values
 	Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 
-	//Return view matrix calculated using Euler Angles and the LookAt Matrix
+	// Return view matrix calculated using Euler Angles and the LookAt Matrix
 	glm::mat4 GetViewMatrix();
 
-	//Input System
+	// Input System
 	void ProcessKeyboard(Camera_Movement direction, float deltaTime);
 
-	//Mouse Input
+	// Mouse Input
 	void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true);
 
-	//Mouse Scroll
+	// Mouse Scroll
 	void ProcessMouseScroll(float yoffset);
 
 private:
-	//Calculates the front vector from the Cameras updated Euler Angles
+	// Calculates the front vector from the Cameras updated Euler Angles
 
 	void updateCameraVectors();
 

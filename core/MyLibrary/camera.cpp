@@ -1,7 +1,7 @@
 #include "camera.h"
 
 
-//Vector Constructor
+// Vector Constructor
 Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) : MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
 {
 	Position = position;
@@ -16,7 +16,7 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) : Movem
 	Zoom = ZOOM;
 }
 
-//Scalar Values
+// Scalar Values
 Camera::Camera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch)
 {
 	Position = glm::vec3(posX, posY, posZ);
@@ -36,11 +36,12 @@ glm::mat4 Camera::GetViewMatrix()
 	return glm::lookAt(Position, Position + Front, Up);
 }
 
-//Input System
+// Input System
 void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 {
 	float velocity = MovementSpeed * deltaTime;
 
+	// Switch for each input
 	switch (direction)
 	{
 	case FORWARD:
@@ -70,7 +71,7 @@ void Camera::ProcessKeyboard(Camera_Movement direction, float deltaTime)
 	}
 }
 
-//Mouse Input
+// Mouse Input
 void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
 {
 	xoffset *= MouseSensitivity;
@@ -79,7 +80,7 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
 	Yaw += xoffset;
 	Pitch += yoffset;
 
-	//Avoid flipping
+	// Avoid flipping
 	if (constrainPitch)
 	{
 		if (Pitch > 89.0f)
@@ -95,7 +96,7 @@ void Camera::ProcessMouseMovement(float xoffset, float yoffset, GLboolean constr
 	updateCameraVectors();
 
 }
-//Mouse Scroll
+// Mouse Scroll
 void Camera::ProcessMouseScroll(float yoffset)
 {
 	Zoom -= (float)yoffset;
@@ -111,13 +112,13 @@ void Camera::ProcessMouseScroll(float yoffset)
 }
 void Camera::updateCameraVectors()
 {
-		//Calcs the new front vector
+		// Calcs the new front vector
 		glm::vec3 front;
 		front.x = cos(glm::radians(Yaw)) * cos(glm::radians(Pitch));
 		front.y = sin(glm::radians(Pitch));
 		front.z = sin(glm::radians(Yaw)) * cos(glm::radians(Pitch));
 		Front = glm::normalize(front);
-		//Recalc the right and up vec
+		// Recalc the right and up vec
 		Right = glm::normalize(glm::cross(Front, WorldUp));
 		Up = glm::normalize(glm::cross(Right, Front));
 }

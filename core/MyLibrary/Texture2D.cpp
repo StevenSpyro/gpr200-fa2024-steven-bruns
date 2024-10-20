@@ -21,6 +21,7 @@ namespace myLibrary
 
 		unsigned char* data = stbi_load(filePath, &width, &height, &nrChannels, 0);
 
+		// Get the image data
 		if (data)
 		{
 			glTexImage2D(GL_TEXTURE_2D, 0, alpha, width, height, 0, alpha, GL_UNSIGNED_BYTE, data);
@@ -31,16 +32,14 @@ namespace myLibrary
 			std::cout << "Failed to load texture" << std::endl;
 		}
 
-		//unsigned int loadTexture2D(const char* filePath, int filterMode, int wrapMode);
-
 		stbi_image_free(data);
 	}
 
 	Texture2D::~Texture2D()
 	{
-		//glDeleteTextures(1, &m_id);
 	}
 
+	// Bind the Texture
 	void Texture2D::Bind(unsigned int slot)
 	{
 		glActiveTexture(slot);

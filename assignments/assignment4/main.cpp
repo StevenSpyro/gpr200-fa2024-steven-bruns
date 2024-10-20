@@ -51,7 +51,7 @@ int main() {
 	}
 
 	glEnable(GL_BLEND);
-	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST); //Need Now
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouseCallback);
@@ -110,6 +110,7 @@ int main() {
 		1, 2, 3    // second triangle
 	};
 
+	//Set Random Positions
 	glm::vec3 posRand[20];
 	for (int i = 0; i < 20; i++)
 	{
@@ -118,12 +119,14 @@ int main() {
 		posRand[i].z = ew::RandomRange(-10.0, -5.0f);
 	}
 
+	//Set Random Angles
 	float rotateAngleRand[20];
 	for (int i = 0; i < 20; i++)
 	{
 		rotateAngleRand[i] = ew::RandomRange(-179, 179);
 	}
 
+	//Set Random Axis
 	glm::vec3 rotateAxisRand[20];
 	for (int i = 0; i < 20; i++)
 	{
@@ -132,6 +135,7 @@ int main() {
 		rotateAxisRand[i].z = ew::RandomRange(-10.0, 0.0f);
 	}
 
+	//Set Random Scale
 	glm::vec3 scaleRand[20];
 	for(int i = 0; i < 20; i++)
 	{
@@ -140,32 +144,15 @@ int main() {
 		scaleRand[i].z = ew::RandomRange(1.0f, 20.0f);
 	}
 
-	/*
-	glm::vec3 cubePositions[] =
-	{
-			glm::vec3(0.0f,  0.0f,  0.0f),
-			glm::vec3(2.0f,  5.0f, -15.0f),
-			glm::vec3(-1.5f, -2.2f, -2.5f),
-			glm::vec3(-3.8f, -2.0f, -12.3f),
-			glm::vec3(2.4f, -0.4f, -3.5f),
-			glm::vec3(-1.7f,  3.0f, -7.5f),
-			glm::vec3(1.3f, -2.0f, -2.5f),
-			glm::vec3(1.5f,  2.0f, -2.5f),
-			glm::vec3(1.5f,  0.2f, -1.5f),
-			glm::vec3(-1.3f,  1.0f, -1.5f)
-	};
-	*/
-
 	//Initialization goes here!
 	unsigned int VBO, VAO, EBO;
-	//unsigned int VBO, VAO;
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 
 	glBindVertexArray(VAO);
 
-	// 0. copy our vertices array in a buffer for OpenGL to use
+	// Copy Vertices
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -173,9 +160,9 @@ int main() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	// 1. then set the vertex attributes pointers
+	// Set the vertex attributes pointers
 
-	//Position (XYZ)
+	// Position (XYZ)
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 
@@ -183,19 +170,22 @@ int main() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
+	// Grab the textures
 	Texture2D texture0("assets/Water.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
 	Texture2D texture1("assets/Link.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
 
 	bgShader.Shader::use();
 
+	// Set the textures to ints
 	bgShader.setInt("texture1", 0);
 	bgShader.setInt("texture2", 1);
 
 	float rotateTime = 0;
 
-	//Render loop
+	// Render loop
 	while (!glfwWindowShouldClose(window))
 	{
+		// Set Frame and keep track for Rotation sake.
 		float currentFrame = (glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
@@ -203,28 +193,31 @@ int main() {
 
 		processInput(window);
 
+		// Set Time
 		float time = (float)glfwGetTime();
 		int timeLoc = glGetUniformLocation(bgShader.ID, "uTime");
 		glUniform1f(timeLoc, time);
 
-		//Clear framebuffer
+		// Clear framebuffer
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		//Bind 
+		// Bind 
 		texture0.Texture2D::Bind(GL_TEXTURE0); 
 		texture1.Texture2D::Bind(GL_TEXTURE1); 
 
 		bgShader.Shader::use();
 
+		// Set Projection
 		glm::mat4 projection = glm::perspective(glm::radians(cam.Zoom), 800.0f / 600.0f, 0.1f, 1000.0f);
 		bgShader.setMat4("projection", projection);
 
+		// Set View
 		glm::mat4 view = cam.GetViewMatrix();
 		bgShader.setMat4("view", view);
 
 
-		//Draw
+		// Draw
 		glBindVertexArray(VAO);
 
 		for (unsigned int i = 0; i < 20; i++)
@@ -245,6 +238,7 @@ int main() {
 		glfwSwapBuffers(window);
 	}
 
+	// Clear the heap because it was annoying seeing all the warnings.
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
@@ -253,7 +247,7 @@ int main() {
 	printf("Shutting down...");
 }
 
-//Keyboard Input
+// Allow user to Keyboard Input
 void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
@@ -295,6 +289,7 @@ void processInput(GLFWwindow* window)
 	}
 }
 
+// Allow user to use Mouse
 void mouseCallback(GLFWwindow* window, double xpos, double ypos)
 {
 	if (firstMouse)
@@ -312,6 +307,7 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos)
 	cam.ProcessMouseMovement(xoffset, yoffset);
 }
 
+// Allow user to Scroll
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	cam.ProcessMouseScroll(yoffset);
