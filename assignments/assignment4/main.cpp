@@ -213,8 +213,8 @@ int main() {
 		glm::mat4 projection;
 		if (isOrthograph)
 		{
-			float aspectRatio = 600.0f / 600.0f;
-			projection = glm::ortho(-5.0f, 5.0f, -5.0f / aspectRatio, 0.5f / aspectRatio, 0.1f, 100.0f);
+			float aspectRatio = 800.0f / 600.0f;
+			projection = glm::ortho(-10.0f, 10.0f, -10.0f / aspectRatio, 0.5f / aspectRatio, 0.1f, 100.0f);
 		}
 		else
 		{
@@ -222,7 +222,7 @@ int main() {
 		}
 		bgShader.setMat4("projection", projection);
 
-
+		//Original integration before Ortho
 		/*
 		glm::mat4 projection = glm::perspective(glm::radians(cam.Zoom), 800.0f / 600.0f, 0.1f, 1000.0f);
 		bgShader.setMat4("projection", projection);
