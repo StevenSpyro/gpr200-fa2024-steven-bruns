@@ -118,8 +118,6 @@ int main() {
 		posRand[i].z = ew::RandomRange(-10.0, -5.0f);
 	}
 
-	float rotateTime = ew::RandomRange(-10.0, 10.0f);
-
 	float rotateAngleRand[20];
 	for (int i = 0; i < 20; i++)
 	{
@@ -193,12 +191,15 @@ int main() {
 	bgShader.setInt("texture1", 0);
 	bgShader.setInt("texture2", 1);
 
+	float rotateTime = 0;
+
 	//Render loop
 	while (!glfwWindowShouldClose(window))
 	{
-		float currentFrame = static_cast<float>(glfwGetTime());
+		float currentFrame = (glfwGetTime());
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
+		rotateTime += deltaTime;
 
 		processInput(window);
 
