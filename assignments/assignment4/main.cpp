@@ -175,8 +175,8 @@ int main() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	Texture2D texture0("assets/container.jpg", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB);
-	Texture2D texture1("assets/awesomeface.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB);
+	Texture2D texture0("assets/container.jpg", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB); //container.jpg
+	Texture2D texture1("assets/awesomeface.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA); //awesomeface.png
 	//Texture2D texture2("assets/awesomeface.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB);
 
 	bgShader.Shader::use();
@@ -199,38 +199,10 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Bind 
-		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_2D, texture1.getID());
-		//glActiveTexture(GL_TEXTURE1);
-		//glBindTexture(GL_TEXTURE_2D, texture2.getID());
-
 		texture0.Texture2D::Bind(GL_TEXTURE0); 
 		texture1.Texture2D::Bind(GL_TEXTURE1); 
 
-		//bgShader.use();
-
 		bgShader.Shader::use();
-
-		//texture0.Bind(GL_TEXTURE0);
-
-		//glm::mat4 view = glm::mat4(1.0f);
-		//float radius = 10.0f;
-		//float camX = static_cast<float>(sin(glfwGetTime()) * radius);
-		//float camZ = static_cast<float>(cos(glfwGetTime()) * radius);
-		//view = glm::lookAt(glm::vec3(camX, 0.0f, camZ), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-
-
-
-		//glm::mat4 model = glm::mat4(1.0f);
-		//glm::mat4 projection = glm::mat4(1.0f);
-
-		//projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 100.0f);
-		//model = glm::rotate(model, time * glm::radians(45.0f), glm::vec3(0.5f, 1.0f, 0.0f));
-
-		//int viewLoc = glGetUniformLocation(bgShader.ID, "projection");
-
-		//int projectionLoc = glGetUniformLocation(bgShader.ID, "projection");
-		//bgShader.setMat4("projection", projection);
 
 		glm::mat4 projection = glm::perspective(glm::radians(cam.Zoom), 800.0f / 600.0f, 0.1f, 1000.0f);
 		bgShader.setMat4("projection", projection);
@@ -268,6 +240,7 @@ int main() {
 	printf("Shutting down...");
 }
 
+//Keyboard Input
 void processInput(GLFWwindow* window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
