@@ -22,9 +22,15 @@ const int SCREEN_HEIGHT = 600;
 Camera cam(glm::vec3(0.0f, 0.0f, 3.0f));
 
 void processInput(GLFWwindow* window);
+void mouseCallback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
+
+bool firstMouse = true;
+float lastX = 800.0f / 2.0;
+float lastY = 600.0 / 2.0;
 
 
 int main() {
@@ -48,6 +54,8 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouseCallback);
+	glfwSetScrollCallback(window, scroll_callback);
 
 	Shader charShader("assets/vertexShader.vs", "assets/fragmentShader.fs");
 	Shader bgShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
@@ -175,13 +183,11 @@ int main() {
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	//Texture2D texture0("assets/container.jpg", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB); //container.jpg
-	//Texture2D texture1("assets/awesomeface.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA); //awesomeface.png
-	//Texture2D texture2("assets/awesomeface.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB);
-
 	Texture2D texture0("assets/Water.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
 	Texture2D texture1("assets/Link.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
+
 	bgShader.Shader::use();
+
 	bgShader.setInt("texture1", 0);
 	bgShader.setInt("texture2", 1);
 
@@ -282,4 +288,26 @@ void processInput(GLFWwindow* window)
 	{
 		cam.ProcessKeyboard(UP, deltaTime);
 	}
+}
+
+void mouseCallback(GLFWwindow* window, double xpos, double ypos)
+{
+	if (firstMouse)
+	{
+		lastX = xpos;
+		lastY = ypos;
+		firstMouse = false;
+	}
+
+	float xoffset = xpos - lastX;
+	float yoffset = ypos - lastY;
+	lastX = xpos;
+	lastY = ypos;
+
+	cam.ProcessMouseMovement(xoffset, yoffset);
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+	cam.ProcessMouseScroll(yoffset);
 }
