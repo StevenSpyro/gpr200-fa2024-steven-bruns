@@ -118,6 +118,8 @@ int main() {
 		posRand[i].z = ew::RandomRange(-10.0, -5.0f);
 	}
 
+	float rotateTime = ew::RandomRange(-10.0, 10.0f);
+
 	float rotateAngleRand[20];
 	for (int i = 0; i < 20; i++)
 	{
@@ -201,6 +203,8 @@ int main() {
 		processInput(window);
 
 		float time = (float)glfwGetTime();
+		int timeLoc = glGetUniformLocation(bgShader.ID, "uTime");
+		glUniform1f(timeLoc, time);
 
 		//Clear framebuffer
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
@@ -229,7 +233,7 @@ int main() {
 			model = glm::scale(model, scaleRand[i]);
 			model = glm::translate(model, posRand[i]);
 			float angle = 20.0f * i;
-			model = glm::rotate(model, glm::radians(rotateAngleRand[i]), rotateAxisRand[i]);
+			model = glm::rotate(model, rotateTime * glm::radians(rotateAngleRand[i]), rotateAxisRand[i]);
 			bgShader.setMat4("model", model);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
