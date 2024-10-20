@@ -28,6 +28,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+bool isOrthograph = false;
 bool firstMouse = true;
 float lastX = 800.0f / 2.0;
 float lastY = 600.0 / 2.0;
@@ -209,8 +210,23 @@ int main() {
 		bgShader.Shader::use();
 
 		// Set Projection
+		glm::mat4 projection;
+		if (isOrthograph)
+		{
+			float aspectRatio = 600.0f / 600.0f;
+			projection = glm::ortho(-5.0f, 5.0f, -5.0f / aspectRatio, 0.5f / aspectRatio, 0.1f, 100.0f);
+		}
+		else
+		{
+			projection = glm::perspective(glm::radians(cam.Zoom), 800.0f / 600.0f, 0.1f, 1000.0f);
+		}
+		bgShader.setMat4("projection", projection);
+
+
+		/*
 		glm::mat4 projection = glm::perspective(glm::radians(cam.Zoom), 800.0f / 600.0f, 0.1f, 1000.0f);
 		bgShader.setMat4("projection", projection);
+		*/
 
 		// Set View
 		glm::mat4 view = cam.GetViewMatrix();
@@ -255,6 +271,10 @@ void processInput(GLFWwindow* window)
 		glfwSetWindowShouldClose(window, true);
 	}
 
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS)
+	{
+		isOrthograph = !isOrthograph;
+	}
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		cam.ProcessKeyboard(FORWARD, deltaTime);
