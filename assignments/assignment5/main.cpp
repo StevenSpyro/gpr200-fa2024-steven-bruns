@@ -16,8 +16,8 @@
 
 //IMGUI
 #include <imgui.h>
-//#include <imgui.impl_glfw.h>
-//#include <imgui.impl_opengl3.h>
+#include <imgui_impl_glfw.h>
+#include <imgui_impl_opengl3.h>
 
 using namespace myLibrary;
 
@@ -58,6 +58,12 @@ int main() {
 		printf("GLAD Failed to load GL headers");
 		return 1;
 	}
+
+	//Initialize ImGUI
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init();
 
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST); //Need Now
@@ -209,7 +215,8 @@ int main() {
 		glUniform1f(timeLoc, time);
 
 		// Clear framebuffer
-		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
+		//glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Activate Shader to set uniforms/draw objects
@@ -259,8 +266,50 @@ int main() {
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::scale(model, scaleRand[i]);
 			model = glm::translate(model, posRand[i]);
-			float angle = 20.0f * i;
-			model = glm::rotate(model, rotateTime * glm::radians(rotateAngleRand[i]), rotateAxisRand[i]);
+			//float angle = 20.0f * i;
+			//model = glm::rotate(model, rotateTime * glm::radians(rotateAngleRand[i]), rotateAxisRand[i]);
+			lightCubeShader.setMat4("model", model);
+
+			glBindVertexArray(cubeVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+
+			// also draw the lamp object
+			lightCubeShader.use();
+			lightCubeShader.setMat4("projection", projection);
+			lightCubeShader.setMat4("view", view);
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, lightPos);
+			model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
+			lightCubeShader.setMat4("model", model);
+
+			glBindVertexArray(lightCubeVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+
+			// Start Drawing ImGUI
+			ImGui_ImplGlfw_NewFrame();
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui::NewFrame();
+
+			// Create a window called Settings.
+			ImGui::Begin("Settings");
+			ImGui::Text("Add Controls Here!");
+			ImGui::End();
+
+			//Actually render IMGUI elements using OpenGL
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		}
+
+		/*
+		for (unsigned int i = 0; i < 20; i++)
+		{
+			// calculate the model matrix for each object and pass it to shader before drawing
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::scale(model, scaleRand[i]);
+			model = glm::translate(model, posRand[i]);
+			//float angle = 20.0f * i;
+			//model = glm::rotate(model, rotateTime * glm::radians(rotateAngleRand[i]), rotateAxisRand[i]);
 			lightCubeShader.setMat4("model", model);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -277,7 +326,7 @@ int main() {
 			glBindVertexArray(lightCubeVAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 
-		}
+		}*/
 
 		/*
 		lightCubeShader.use();
