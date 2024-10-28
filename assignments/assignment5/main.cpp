@@ -26,6 +26,9 @@ const int SCREEN_HEIGHT = 600;
 
 Camera cam(glm::vec3(0.0f, 0.0f, 3.0f));
 
+//Lighting
+glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+
 void processInput(GLFWwindow* window);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -63,8 +66,8 @@ int main() {
 	glfwSetCursorPosCallback(window, mouseCallback);
 	glfwSetScrollCallback(window, scroll_callback);
 
-	Shader charShader("assets/vertexShader.vs", "assets/fragmentShader.fs");
-	Shader bgShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
+	Shader lightingShader("assets/vertexShader.vs", "assets/fragmentShader.fs");
+	Shader lightCubeShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
 
 	float vertices[] = {
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -151,12 +154,16 @@ int main() {
 	}
 
 	//Initialization goes here!
-	unsigned int VBO, VAO, EBO;
-	glGenVertexArrays(1, &VAO);
+	unsigned int VBO, cubeVAO, EBO;
+	glGenVertexArrays(1, &cubeVAO);
 	glGenBuffers(1, &VBO);
 	glGenBuffers(1, &EBO);
 
-	glBindVertexArray(VAO);
+	glBindVertexArray(cubeVAO);
+
+	unsigned int lightCubeVAO;
+	glGenVertexArrays(1, &lightCubeVAO);
+	glBindVertexArray(lightCubeVAO);
 
 	// Copy Vertices
 
@@ -180,11 +187,11 @@ int main() {
 	Texture2D texture0("assets/Water.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
 	Texture2D texture1("assets/Link.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
 
-	bgShader.Shader::use();
+	lightCubeShader.Shader::use();
 
 	// Set the textures to ints
-	bgShader.setInt("texture1", 0);
-	bgShader.setInt("texture2", 1);
+	lightCubeShader.setInt("texture1", 0);
+	lightCubeShader.setInt("texture2", 1);
 
 	float rotateTime = 0;
 
@@ -201,18 +208,26 @@ int main() {
 
 		// Set Time
 		float time = (float)glfwGetTime();
-		int timeLoc = glGetUniformLocation(bgShader.ID, "uTime");
+		int timeLoc = glGetUniformLocation(lightCubeShader.ID, "uTime");
 		glUniform1f(timeLoc, time);
 
 		// Clear framebuffer
 		glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		//Activate Shader to set uniforms/draw objects
+		lightingShader.use();
+		lightingShader.setVec3("objectColor", 1.0f, 0.6f, 0.31f);
+		lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+		lightingShader.setVec3("lightPos", lightPos);
+		lightingShader.setVec3("viewPos", cam.Position);
+
+
 		// Bind 
 		texture0.Texture2D::Bind(GL_TEXTURE0); 
 		texture1.Texture2D::Bind(GL_TEXTURE1); 
 
-		bgShader.Shader::use();
+		lightCubeShader.Shader::use();
 
 		// Set Projection
 		glm::mat4 projection;
@@ -225,7 +240,7 @@ int main() {
 		{
 			projection = glm::perspective(glm::radians(cam.Zoom), 800.0f / 600.0f, 0.1f, 1000.0f);
 		}
-		bgShader.setMat4("projection", projection);
+		lightCubeShader.setMat4("projection", projection);
 
 		//Original integration before Ortho
 		/*
@@ -235,11 +250,11 @@ int main() {
 
 		// Set View
 		glm::mat4 view = cam.GetViewMatrix();
-		bgShader.setMat4("view", view);
+		lightCubeShader.setMat4("view", view);
 
 
 		// Draw
-		glBindVertexArray(VAO);
+		glBindVertexArray(cubeVAO);
 
 		for (unsigned int i = 0; i < 20; i++)
 		{
@@ -249,10 +264,32 @@ int main() {
 			model = glm::translate(model, posRand[i]);
 			float angle = 20.0f * i;
 			model = glm::rotate(model, rotateTime * glm::radians(rotateAngleRand[i]), rotateAxisRand[i]);
-			bgShader.setMat4("model", model);
+			lightCubeShader.setMat4("model", model);
 
 			glDrawArrays(GL_TRIANGLES, 0, 36);
+
+			// also draw the lamp object
+			lightCubeShader.use();
+			lightCubeShader.setMat4("projection", projection);
+			lightCubeShader.setMat4("view", view);
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, lightPos);
+			model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
+			lightCubeShader.setMat4("model", model);
+
+			glBindVertexArray(lightCubeVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
+
+		/*
+		lightCubeShader.use();
+		lightCubeShader.setMat4("projection", projection);
+		lightCubeShader.setMat4("view", view);
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, lightPos);
+		model = glm::scale(model, glm::Vec3(0.2f));
+		lightCubeShader.setMat4("model", model);
+		*/
 
 		glfwPollEvents();
 
@@ -260,7 +297,8 @@ int main() {
 	}
 
 	// Clear the heap because it was annoying seeing all the warnings.
-	glDeleteVertexArrays(1, &VAO);
+	glDeleteVertexArrays(1, &cubeVAO);
+	glDeleteVertexArrays(1, &lightCubeVAO);
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
 	glfwTerminate();
