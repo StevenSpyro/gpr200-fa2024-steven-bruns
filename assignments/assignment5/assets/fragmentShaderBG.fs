@@ -15,5 +15,5 @@ uniform float uTime = 1.0;
 void main()
 {
     //Mix both textures.
-	FragColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.2);
+	FragColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.1);
 }
