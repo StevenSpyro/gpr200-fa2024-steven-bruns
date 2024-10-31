@@ -41,6 +41,13 @@ bool firstMouse = true;
 float lastX = 800.0f / 2.0;
 float lastY = 600.0 / 2.0;
 
+glm::vec3 lightColor(0.5f, 0.5f, 0.5f);
+
+float ambientK = 0.1f;
+float diffuseK = 1.0f;
+float specularK = 0.08f;
+float shininess = 2.0f;
+
 
 int main() {
 	printf("Initializing...");
@@ -48,7 +55,7 @@ int main() {
 		printf("GLFW failed to init!");
 		return 1;
 	}
-	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Assignment 4", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Assignment 5", NULL, NULL);
 	if (window == NULL) {
 		printf("GLFW failed to create window");
 		return 1;
@@ -68,7 +75,11 @@ int main() {
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST); //Need Now
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2); //Returns GLFW_PRESS or GLFW_RELEASE
+
+
 	glfwSetCursorPosCallback(window, mouseCallback);
 	glfwSetScrollCallback(window, scroll_callback);
 
@@ -191,6 +202,7 @@ int main() {
 	Texture2D texture1("assets/Link.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
 
 	lightCubeShader.Shader::use();
+	lightingShader.use();
 
 	// Set the textures to ints
 	lightCubeShader.setInt("texture1", 0);
@@ -221,15 +233,23 @@ int main() {
 
 		//Activate Shader to set uniforms/draw objects
 		lightingShader.use();
-		lightingShader.setVec3("objectColor", 1.0f, 0.6f, 0.31f);
-		lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-		lightingShader.setVec3("lightPos", lightPos);
-		lightingShader.setVec3("viewPos", cam.Position);
+		//lightingShader.setVec3("objectColor", 1.0f, 0.6f, 0.31f);
+		//lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+		//lightingShader.setVec3("lightPos", lightPos);
+		//lightingShader.setVec3("viewPos", cam.Position);
+		lightCubeShader.setVec3("lightPos", lightPos);
+		lightCubeShader.setVec3("lightColor", lightColor);
+		lightCubeShader.setVec3("viewPos", cam.Position);
+
+		lightCubeShader.setFloat("ambientStrength", ambientK);
+		lightCubeShader.setFloat("diffuseStrength", diffuseK);
+		lightCubeShader.setFloat("specularStrength", specularK);
+		lightCubeShader.setFloat("shininessStrength", shininess);
 
 
 		// Bind 
 		texture0.Texture2D::Bind(GL_TEXTURE0); 
-		texture1.Texture2D::Bind(GL_TEXTURE1); 
+		//texture1.Texture2D::Bind(GL_TEXTURE1); 
 
 		lightCubeShader.Shader::use();
 
@@ -244,7 +264,7 @@ int main() {
 		{
 			projection = glm::perspective(glm::radians(cam.Zoom), 800.0f / 600.0f, 0.1f, 1000.0f);
 		}
-		lightCubeShader.setMat4("projection", projection);
+		lightingShader.setMat4("projection", projection);
 
 		//Original integration before Ortho
 		/*
@@ -254,7 +274,7 @@ int main() {
 
 		// Set View
 		glm::mat4 view = cam.GetViewMatrix();
-		lightCubeShader.setMat4("view", view);
+		lightingShader.setMat4("view", view);
 
 
 		// Draw
@@ -292,7 +312,15 @@ int main() {
 
 			// Create a window called Settings.
 			ImGui::Begin("Settings");
-			ImGui::Text("Add Controls Here!");
+			//ImGui::Text("Add Controls Here!");
+
+			ImGui::DragFloat3("Light Position", &lightPos.x, 0.1f);
+			ImGui::ColorEdit3("Light Color", &lightColor.r);
+			ImGui::SliderFloat("Ambient K", &ambientK, 0.0f, 1.0f);
+			ImGui::SliderFloat("Diffuse K", &diffuseK, 0.0f, 1.0f);
+			ImGui::SliderFloat("Specular K", &specularK, 0.0f, 1.0f);
+			ImGui::SliderFloat("Shininess", &shininess, 2.0f, 1024.0f);
+
 			ImGui::End();
 
 			//Actually render IMGUI elements using OpenGL
@@ -344,7 +372,7 @@ int main() {
 	}
 
 	// Clear the heap because it was annoying seeing all the warnings.
-	glDeleteVertexArrays(1, &cubeVAO);
+	glad_glDeleteVertexArrays(1, &cubeVAO);
 	glDeleteVertexArrays(1, &lightCubeVAO);
 	glDeleteBuffers(1, &VBO);
 	glfwTerminate();
