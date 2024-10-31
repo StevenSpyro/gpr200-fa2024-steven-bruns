@@ -28,6 +28,7 @@ Camera cam(glm::vec3(0.0f, 0.0f, 3.0f));
 
 //Lighting
 glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightColor(0.5f, 0.5f, 0.5f);
 
 void processInput(GLFWwindow* window);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -38,15 +39,13 @@ float lastFrame = 0.0f;
 
 bool isOrthograph = false;
 bool firstMouse = true;
-float lastX = 800.0f / 2.0;
-float lastY = 600.0 / 2.0;
-
-glm::vec3 lightColor(0.5f, 0.5f, 0.5f);
+float lastX = (float) SCREEN_WIDTH / 2.0;
+float lastY = (float) SCREEN_HEIGHT / 2.0;
 
 float ambientK = 0.1f;
 float diffuseK = 1.0f;
 float specularK = 0.08f;
-float shininess = 2.0f;
+float shininess = 32.0f;
 
 
 int main() {
@@ -60,6 +59,11 @@ int main() {
 		printf("GLFW failed to create window");
 		return 1;
 	}
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetCursorPosCallback(window, mouseCallback);
+	glfwSetScrollCallback(window, scroll_callback);
+
 	glfwMakeContextCurrent(window);
 	if (!gladLoadGL(glfwGetProcAddress)) {
 		printf("GLAD Failed to load GL headers");
@@ -75,9 +79,6 @@ int main() {
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST); //Need Now
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	glfwSetCursorPosCallback(window, mouseCallback);
-	glfwSetScrollCallback(window, scroll_callback);
 
 	Shader lightingShader("assets/vertexShader.vs", "assets/fragmentShader.fs");
 	Shader lightCubeShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
@@ -180,7 +181,7 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	// Normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 
@@ -195,14 +196,12 @@ int main() {
 
 	// Grab the textures
 	Texture2D texture0("assets/Water.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
-	Texture2D texture1("assets/Link.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
 
 	lightCubeShader.Shader::use();
 	lightingShader.use();
 
 	// Set the textures to ints
 	lightCubeShader.setInt("texture1", 0);
-	lightCubeShader.setInt("texture2", 1);
 
 	float rotateTime = 0;
 
@@ -222,19 +221,28 @@ int main() {
 		int timeLoc = glGetUniformLocation(lightCubeShader.ID, "uTime");
 		glUniform1f(timeLoc, time);
 
+		//Loc
+		int ambientLoc = glGetUniformLocation(lightingShader.ID, "ambientStrength");
+		int diffLoc = glGetUniformLocation(lightingShader.ID, "diffStrength");
+		int specularLoc = glGetUniformLocation(lightingShader.ID, "specularStrength");
+		int shininessLoc = glGetUniformLocation(lightingShader.ID, "Shininess");
+
 		// Clear framebuffer
 		//glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Activate Shader to set uniforms/draw objects
-		lightingShader.use();
 		//lightingShader.setVec3("objectColor", 1.0f, 0.6f, 0.31f);
 		//lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
 		//lightingShader.setVec3("lightPos", lightPos);
 		//lightingShader.setVec3("viewPos", cam.Position);
+		lightCubeShader.use();
+		glUniform1f(timeLoc, time);
 		lightCubeShader.setVec3("lightPos", lightPos);
 		lightCubeShader.setVec3("lightColor", lightColor);
+
+
 		lightCubeShader.setVec3("viewPos", cam.Position);
 
 		lightCubeShader.setFloat("ambientStrength", ambientK);
@@ -260,7 +268,6 @@ int main() {
 		{
 			projection = glm::perspective(glm::radians(cam.Zoom), 800.0f / 600.0f, 0.1f, 1000.0f);
 		}
-		lightingShader.setMat4("projection", projection);
 
 		//Original integration before Ortho
 		/*
@@ -270,6 +277,7 @@ int main() {
 
 		// Set View
 		glm::mat4 view = cam.GetViewMatrix();
+		lightingShader.setMat4("projection", projection);
 		lightingShader.setMat4("view", view);
 
 
@@ -286,81 +294,52 @@ int main() {
 			//model = glm::rotate(model, rotateTime * glm::radians(rotateAngleRand[i]), rotateAxisRand[i]);
 			lightCubeShader.setMat4("model", model);
 
-			glBindVertexArray(cubeVAO);
+			//glBindVertexArray(cubeVAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 
-			// also draw the lamp object
-			lightCubeShader.use();
-			lightCubeShader.setMat4("projection", projection);
-			lightCubeShader.setMat4("view", view);
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, lightPos);
-			model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
-			lightCubeShader.setMat4("model", model);
-
-			glBindVertexArray(lightCubeVAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-
-			// Start Drawing ImGUI
-			ImGui_ImplGlfw_NewFrame();
-			ImGui_ImplOpenGL3_NewFrame();
-			ImGui::NewFrame();
-
-			// Create a window called Settings.
-			//ImGui::Text("Add Controls Here!");
-			ImGui::Begin("Settings");
-			ImGui::Text("Controls");
-			ImGui::DragFloat3("Light Position", &lightPos.x, 0.1f);
-			ImGui::ColorEdit3("Light Color", &lightColor.r);
-			ImGui::SliderFloat("Ambient K", &ambientK, 0.0f, 1.0f);
-			ImGui::SliderFloat("Diffuse K", &diffuseK, 0.0f, 1.0f);
-			ImGui::SliderFloat("Specular K", &specularK, 0.0f, 1.0f);
-			ImGui::SliderFloat("Shininess", &shininess, 2.0f, 1024.0f);
-
-			ImGui::End();
-
-			//Actually render IMGUI elements using OpenGL
-			ImGui::Render();
-			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		}
 
-		/*
-		for (unsigned int i = 0; i < 20; i++)
-		{
-			// calculate the model matrix for each object and pass it to shader before drawing
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::scale(model, scaleRand[i]);
-			model = glm::translate(model, posRand[i]);
-			//float angle = 20.0f * i;
-			//model = glm::rotate(model, rotateTime * glm::radians(rotateAngleRand[i]), rotateAxisRand[i]);
-			lightCubeShader.setMat4("model", model);
-
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-
-			// also draw the lamp object
-			lightCubeShader.use();
-			lightCubeShader.setMat4("projection", projection);
-			lightCubeShader.setMat4("view", view);
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, lightPos);
-			model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
-			lightCubeShader.setMat4("model", model);
-
-			glBindVertexArray(lightCubeVAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-
-		}*/
-
-		/*
+		// also draw the lamp object
 		lightCubeShader.use();
 		lightCubeShader.setMat4("projection", projection);
 		lightCubeShader.setMat4("view", view);
-		model = glm::mat4(1.0f);
+		lightCubeShader.setVec3("ourColor", lightColor);
+
+		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::Vec3(0.2f));
+		model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
 		lightCubeShader.setMat4("model", model);
-		*/
+
+		lightCubeShader.setVec3("lightPos", lightPos);
+		lightCubeShader.setVec3("lightColor", lightColor);
+
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		glBindVertexArray(lightCubeVAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Start Drawing ImGUI
+		ImGui_ImplGlfw_NewFrame();
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui::NewFrame();
+
+		// Create a window called Settings.
+		//ImGui::Text("Add Controls Here!");
+		ImGui::Begin("Settings");
+		ImGui::Text("Controls");
+		ImGui::DragFloat3("Light Position", &lightPos.x, 0.1f);
+		ImGui::ColorEdit3("Light Color", &lightColor.r);
+		ImGui::SliderFloat("Ambient K", &ambientK, 0.0f, 1.0f);
+		ImGui::SliderFloat("Diffuse K", &diffuseK, 0.0f, 1.0f);
+		ImGui::SliderFloat("Specular K", &specularK, 0.0f, 1.0f);
+		ImGui::SliderFloat("Shininess", &shininess, 2.0f, 1024.0f);
+
+		ImGui::End();
+
+		//Actually render IMGUI elements using OpenGL
+		ImGui::Render();
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
 		glfwPollEvents();
 
