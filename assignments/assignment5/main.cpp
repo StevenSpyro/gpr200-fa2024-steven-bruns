@@ -75,11 +75,7 @@ int main() {
 	glEnable(GL_BLEND);
 	glEnable(GL_DEPTH_TEST); //Need Now
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-	glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2); //Returns GLFW_PRESS or GLFW_RELEASE
-
-
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	glfwSetCursorPosCallback(window, mouseCallback);
 	glfwSetScrollCallback(window, scroll_callback);
 
@@ -311,9 +307,9 @@ int main() {
 			ImGui::NewFrame();
 
 			// Create a window called Settings.
-			ImGui::Begin("Settings");
 			//ImGui::Text("Add Controls Here!");
-
+			ImGui::Begin("Settings");
+			ImGui::Text("Controls");
 			ImGui::DragFloat3("Light Position", &lightPos.x, 0.1f);
 			ImGui::ColorEdit3("Light Color", &lightColor.r);
 			ImGui::SliderFloat("Ambient K", &ambientK, 0.0f, 1.0f);
@@ -387,11 +383,18 @@ void processInput(GLFWwindow* window)
 	{
 		glfwSetWindowShouldClose(window, true);
 	}
-
-	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS)
+	if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) //Lock Mouse
 	{
-		isOrthograph = !isOrthograph;
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	}
+	else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_2) == GLFW_RELEASE) //Unlock Mouse
+	{
+		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
+	//if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS)
+	//{
+	//	isOrthograph = !isOrthograph;
+	//}
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		cam.ProcessKeyboard(FORWARD, deltaTime);
@@ -441,7 +444,10 @@ void mouseCallback(GLFWwindow* window, double xpos, double ypos)
 	lastX = xpos;
 	lastY = ypos;
 
-	cam.ProcessMouseMovement(xoffset, yoffset);
+	if (glfwGetInputMode(window, GLFW_CURSOR) == GLFW_CURSOR_DISABLED)
+	{
+		cam.ProcessMouseMovement(xoffset, yoffset);
+	}
 }
 
 // Allow user to Scroll
