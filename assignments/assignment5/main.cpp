@@ -44,7 +44,7 @@ float lastY = (float) SCREEN_HEIGHT / 2.0;
 
 float ambientK = 0.1f;
 float diffuseK = 1.0f;
-float specularK = 0.08f;
+float specularK = 1.0f;
 float shininess = 32.0f;
 
 
@@ -181,7 +181,7 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	// Normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
 
@@ -222,10 +222,10 @@ int main() {
 		glUniform1f(timeLoc, time);
 
 		//Loc
-		int ambientLoc = glGetUniformLocation(lightingShader.ID, "ambientStrength");
-		int diffLoc = glGetUniformLocation(lightingShader.ID, "diffStrength");
-		int specularLoc = glGetUniformLocation(lightingShader.ID, "specularStrength");
-		int shininessLoc = glGetUniformLocation(lightingShader.ID, "Shininess");
+		//int ambientLoc = glGetUniformLocation(lightingShader.ID, "ambientStrength");
+		//int diffLoc = glGetUniformLocation(lightingShader.ID, "diffStrength");
+		//int specularLoc = glGetUniformLocation(lightingShader.ID, "specularStrength");
+		//int shininessLoc = glGetUniformLocation(lightingShader.ID, "Shininess");
 
 		// Clear framebuffer
 		//glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
@@ -233,21 +233,25 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Activate Shader to set uniforms/draw objects
-		//lightingShader.setVec3("objectColor", 1.0f, 0.6f, 0.31f);
-		//lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-		//lightingShader.setVec3("lightPos", lightPos);
-		//lightingShader.setVec3("viewPos", cam.Position);
-		lightCubeShader.use();
+
+		lightingShader.use();
+		lightingShader.setVec3("objectColor", 1.0f, 0.6f, 0.31f);
+		lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+		lightingShader.setVec3("lightPos", lightPos);
+		lightingShader.setVec3("viewPos", cam.Position);
+
+
+		//lightCubeShader.use();
 		glUniform1f(timeLoc, time);
-		lightCubeShader.setVec3("lightPos", lightPos);
-		lightCubeShader.setVec3("lightColor", lightColor);
+		//lightCubeShader.setVec3("lightPos", lightPos);
+		//lightCubeShader.setVec3("lightColor", lightColor);
 
 
-		lightCubeShader.setVec3("viewPos", cam.Position);
+		//lightCubeShader.setVec3("viewPos", cam.Position);
 
-		lightCubeShader.setFloat("ambientStrength", ambientK);
-		lightCubeShader.setFloat("diffuseStrength", diffuseK);
-		lightCubeShader.setFloat("specularStrength", specularK);
+		//lightCubeShader.setFloat("ambientStrength", ambientK);
+		//lightCubeShader.setFloat("diffuseStrength", diffuseK);
+		//lightCubeShader.setFloat("specularStrength", specularK);
 		lightCubeShader.setFloat("shininessStrength", shininess);
 
 
@@ -255,7 +259,7 @@ int main() {
 		texture0.Texture2D::Bind(GL_TEXTURE0); 
 		//texture1.Texture2D::Bind(GL_TEXTURE1); 
 
-		lightCubeShader.Shader::use();
+		lightingShader.Shader::use();
 
 		// Set Projection
 		glm::mat4 projection;
@@ -292,7 +296,7 @@ int main() {
 			model = glm::translate(model, posRand[i]);
 			//float angle = 20.0f * i;
 			//model = glm::rotate(model, rotateTime * glm::radians(rotateAngleRand[i]), rotateAxisRand[i]);
-			lightCubeShader.setMat4("model", model);
+			lightingShader.setMat4("model", model);
 
 			//glBindVertexArray(cubeVAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -304,7 +308,7 @@ int main() {
 		lightCubeShader.use();
 		lightCubeShader.setMat4("projection", projection);
 		lightCubeShader.setMat4("view", view);
-		lightCubeShader.setVec3("ourColor", lightColor);
+		//lightCubeShader.setVec3("ourColor", lightColor);
 
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
@@ -313,8 +317,6 @@ int main() {
 
 		lightCubeShader.setVec3("lightPos", lightPos);
 		lightCubeShader.setVec3("lightColor", lightColor);
-
-		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glBindVertexArray(lightCubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -347,7 +349,7 @@ int main() {
 	}
 
 	// Clear the heap because it was annoying seeing all the warnings.
-	glad_glDeleteVertexArrays(1, &cubeVAO);
+	glDeleteVertexArrays(1, &cubeVAO);
 	glDeleteVertexArrays(1, &lightCubeVAO);
 	glDeleteBuffers(1, &VBO);
 	glfwTerminate();
