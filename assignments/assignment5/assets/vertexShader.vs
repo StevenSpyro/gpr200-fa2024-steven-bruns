@@ -17,13 +17,12 @@ uniform mat4 projection;
 void main()
 {
 	vec3 pos = aPos;
-	//pos.y += sin(uTime * 1.5 + pos.x) / 2.0;
 
 	gl_Position = projection * view * model * vec4(aPos, 1.0);
-//	Color = aColor; //Pass-through, just transferring information 
+
 	FragPos = vec3(model * vec4(aPos, 1.0)); 
 	TexCoord = aTexCoord;
 
 	Normal = mat3(transpose(inverse(model))) * aNormal;
-	// this is a costly operation... fine for learning but this should be calced on the CPU like the model matrix...
+
 }

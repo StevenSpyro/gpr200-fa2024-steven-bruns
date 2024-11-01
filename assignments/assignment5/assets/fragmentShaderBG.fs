@@ -9,7 +9,7 @@ in vec2 TexCoord;
 uniform sampler2D ourTexture;
 
 uniform sampler2D texture1; //Water
-uniform sampler2D texture2; //Link
+
 uniform vec3 lightColor;
 
 uniform float uTime = 1.0;

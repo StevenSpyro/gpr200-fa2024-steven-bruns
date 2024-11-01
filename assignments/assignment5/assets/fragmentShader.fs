@@ -14,7 +14,7 @@ uniform vec3 viewPos;
 uniform float ambientK;     
 uniform float diffuseK;     
 uniform float specularK;    
-uniform float Shininess;    
+uniform float shininess;    
 
 void main()
 {
@@ -30,7 +30,7 @@ void main()
     // Specular
     vec3 viewDir = normalize(viewPos - FragPos);
     vec3 reflectDir = reflect(-lightDir, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), Shininess);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
     vec3 specular = specularK * spec * lightColor;
 
     // Texture

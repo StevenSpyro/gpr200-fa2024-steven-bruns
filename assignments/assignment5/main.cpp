@@ -194,9 +194,6 @@ int main() {
 
 	texture0.Bind(GL_TEXTURE0);
 
-	//lightCubeShader.use();
-	//lightingShader.use();
-
 	// Set the textures to ints
 	lightingShader.setInt("texture0", 0);
 
@@ -211,7 +208,8 @@ int main() {
 	int ambientLoc = glGetUniformLocation(lightingShader.ID, "ambientK");
 	int diffLoc = glGetUniformLocation(lightingShader.ID, "diffuseK");
 	int specularLoc = glGetUniformLocation(lightingShader.ID, "specularK");
-	int shininessLoc = glGetUniformLocation(lightingShader.ID, "Shininess");
+	int shininessLoc = glGetUniformLocation(lightingShader.ID, "shininess");
+	int lightColorLoc = glGetUniformLocation(lightingShader.ID, "lightColor");
 
 	float ambientK = 0.1f;
 	float diffuseK = 1.0f;
@@ -246,7 +244,7 @@ int main() {
 
 		lightingShader.use();
 		lightingShader.setVec3("lightPos", lightPos);
-		lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+		lightingShader.setVec3("lightColor", lightColor);
 		lightingShader.setVec3("viewPos", cam.Position);
 
 		lightingShader.setFloat("ambientK", ambientK);
@@ -256,33 +254,10 @@ int main() {
 
 		texture0.Bind(GL_TEXTURE0);
 
-
-		//lightCubeShader.setVec3("objectColor", 1.0f, 0.6f, 0.31f);
-		//lightCubeShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-		//lightCubeShader.setVec3("lightPos", lightPos);
-		//lightCubeShader.setVec3("viewPos", cam.Position);
-		//lightCubeShader.setInt("blinn", blinn);
-
-
-		//lightCubeShader.use();
 		glUniform1f(timeLoc, time);
-		//lightCubeShader.setVec3("lightPos", lightPos);
-		//lightCubeShader.setVec3("lightColor", lightColor);
-
-
-		//lightCubeShader.setVec3("viewPos", cam.Position);
-
-		//lightCubeShader.setFloat("ambientStrength", ambientK);
-		//lightCubeShader.setFloat("diffuseStrength", diffuseK);
-		//lightCubeShader.setFloat("specularStrength", specularK);
-		//lightCubeShader.setFloat("shininessStrength", shininess);
-
 
 		// Bind 
 		texture0.Texture2D::Bind(GL_TEXTURE0); 
-		//texture1.Texture2D::Bind(GL_TEXTURE1); 
-
-		//lightingShader.Shader::use();
 
 		// Set Projection
 		glm::mat4 projection;
@@ -342,7 +317,6 @@ int main() {
 		lightCubeShader.setMat4("model", model);
 		lightCubeShader.setVec3("lightColor", lightColor);
 
-		//glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glBindVertexArray(0);
