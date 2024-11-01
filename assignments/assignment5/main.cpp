@@ -26,10 +26,6 @@ const int SCREEN_HEIGHT = 600;
 
 Camera cam(glm::vec3(0.0f, 0.0f, 3.0f));
 
-//Lighting
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-glm::vec3 lightColor(0.5f, 0.5f, 0.5f);
-
 void processInput(GLFWwindow* window);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -47,6 +43,7 @@ float diffuseK = 1.0f;
 float specularK = 1.0f;
 float shininess = 32.0f;
 
+bool blinn = false;
 
 int main() {
 	printf("Initializing...");
@@ -168,42 +165,55 @@ int main() {
 	}
 
 	// Initialization Goes Here
-	unsigned int VBO, cubeVAO;
-	glGenVertexArrays(1, &cubeVAO);
+	unsigned int VAO, VBO, EBO;
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
+	glGenBuffers(1, &EBO);
 	glGenBuffers(1, &VBO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-	glBindVertexArray(cubeVAO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	// Position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	// Normal attribute
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(6 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-
-	// Configure the light's VAO (VBO stays the same; the vertices are the same for the light object which is also a 3D cube)
-	unsigned int lightCubeVAO;
-	glGenVertexArrays(1, &lightCubeVAO);
-	glBindVertexArray(lightCubeVAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 
 	// Grab the textures
-	Texture2D texture0("assets/Water.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
+	Texture2D texture0("assets/Wood.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
 
 	lightCubeShader.Shader::use();
 	lightingShader.use();
 
 	// Set the textures to ints
-	lightCubeShader.setInt("texture1", 0);
+	lightingShader.setInt("texture0", 0);
 
 	float rotateTime = 0;
+
+	//Lighting
+	glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+	glm::vec3 lightColor(0.5f, 0.5f, 0.5f);
+
+	//Loc
+	int timeLoc = glGetUniformLocation(lightCubeShader.ID, "uTime");
+	int ambientLoc = glGetUniformLocation(lightCubeShader.ID, "ambientStrength");
+	int diffLoc = glGetUniformLocation(lightCubeShader.ID, "diffStrength");
+	int specularLoc = glGetUniformLocation(lightCubeShader.ID, "specularStrength");
+	int shininessLoc = glGetUniformLocation(lightCubeShader.ID, "Shininess");
+
+	float ambientStrength = 0.1f;
+	float diffStrength = 1.0f;
+	float specularStrength = 0.5f;
+	float shininess = 512.0f;
 
 	// Render loop
 	while (!glfwWindowShouldClose(window))
@@ -218,27 +228,26 @@ int main() {
 
 		// Set Time
 		float time = (float)glfwGetTime();
-		int timeLoc = glGetUniformLocation(lightCubeShader.ID, "uTime");
-		glUniform1f(timeLoc, time);
-
-		//Loc
-		//int ambientLoc = glGetUniformLocation(lightingShader.ID, "ambientStrength");
-		//int diffLoc = glGetUniformLocation(lightingShader.ID, "diffStrength");
-		//int specularLoc = glGetUniformLocation(lightingShader.ID, "specularStrength");
-		//int shininessLoc = glGetUniformLocation(lightingShader.ID, "Shininess");
 
 		// Clear framebuffer
 		//glClearColor(0.3f, 0.4f, 0.9f, 1.0f);
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		glUniform1f(timeLoc, time);
+		glUniform1f(ambientLoc, ambientStrength);
+		glUniform1f(diffLoc, diffStrength);
+		glUniform1f(specularLoc, specularStrength);
+		glUniform1f(shininessLoc, shininess);
+
 		//Activate Shader to set uniforms/draw objects
 
-		lightingShader.use();
-		lightingShader.setVec3("objectColor", 1.0f, 0.6f, 0.31f);
-		lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-		lightingShader.setVec3("lightPos", lightPos);
-		lightingShader.setVec3("viewPos", cam.Position);
+		//lightingShader.use();
+		lightCubeShader.setVec3("objectColor", 1.0f, 0.6f, 0.31f);
+		lightCubeShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
+		lightCubeShader.setVec3("lightPos", lightPos);
+		lightCubeShader.setVec3("viewPos", cam.Position);
+		lightCubeShader.setInt("blinn", blinn);
 
 
 		//lightCubeShader.use();
@@ -252,7 +261,7 @@ int main() {
 		//lightCubeShader.setFloat("ambientStrength", ambientK);
 		//lightCubeShader.setFloat("diffuseStrength", diffuseK);
 		//lightCubeShader.setFloat("specularStrength", specularK);
-		lightCubeShader.setFloat("shininessStrength", shininess);
+		//lightCubeShader.setFloat("shininessStrength", shininess);
 
 
 		// Bind 
@@ -286,7 +295,7 @@ int main() {
 
 
 		// Draw
-		glBindVertexArray(cubeVAO);
+		glBindVertexArray(VAO);
 
 		for (unsigned int i = 0; i < 20; i++)
 		{
@@ -298,9 +307,8 @@ int main() {
 			//model = glm::rotate(model, rotateTime * glm::radians(rotateAngleRand[i]), rotateAxisRand[i]);
 			lightingShader.setMat4("model", model);
 
-			//glBindVertexArray(cubeVAO);
+			glBindVertexArray(VAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
-
 
 		}
 
@@ -308,17 +316,16 @@ int main() {
 		lightCubeShader.use();
 		lightCubeShader.setMat4("projection", projection);
 		lightCubeShader.setMat4("view", view);
-		//lightCubeShader.setVec3("ourColor", lightColor);
 
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f)); // a smaller cube
+		model = glm::scale(model, glm::vec3(0.8f)); // a smaller cube
 		lightCubeShader.setMat4("model", model);
 
-		lightCubeShader.setVec3("lightPos", lightPos);
 		lightCubeShader.setVec3("lightColor", lightColor);
+		lightCubeShader.setVec3("lightPos", lightPos);
 
-		glBindVertexArray(lightCubeVAO);
+		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Start Drawing ImGUI
@@ -349,8 +356,8 @@ int main() {
 	}
 
 	// Clear the heap because it was annoying seeing all the warnings.
-	glDeleteVertexArrays(1, &cubeVAO);
-	glDeleteVertexArrays(1, &lightCubeVAO);
+	glDeleteVertexArrays(1, &VAO);
+	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
 	glfwTerminate();
 
