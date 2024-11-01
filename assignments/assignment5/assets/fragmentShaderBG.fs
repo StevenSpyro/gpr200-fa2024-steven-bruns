@@ -10,11 +10,12 @@ uniform sampler2D ourTexture;
 
 uniform sampler2D texture1; //Water
 uniform sampler2D texture2; //Link
+uniform vec3 lightColor;
 
 uniform float uTime = 1.0;
 
 void main()
 {
 
-	FragColor = vec4(1.0);
+	FragColor = vec4(lightColor, 1.0);
 }
