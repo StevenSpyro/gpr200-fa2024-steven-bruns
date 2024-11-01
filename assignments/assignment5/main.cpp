@@ -207,11 +207,11 @@ int main() {
 	glm::vec3 lightColor(1.0f, 1.0f, 1.0f);
 
 	//Loc
-	int timeLoc = glGetUniformLocation(lightCubeShader.ID, "uTime");
-	int ambientLoc = glGetUniformLocation(lightCubeShader.ID, "ambientK");
-	int diffLoc = glGetUniformLocation(lightCubeShader.ID, "diffuseK");
-	int specularLoc = glGetUniformLocation(lightCubeShader.ID, "specularK");
-	int shininessLoc = glGetUniformLocation(lightCubeShader.ID, "Shininess");
+	int timeLoc = glGetUniformLocation(lightingShader.ID, "uTime");
+	int ambientLoc = glGetUniformLocation(lightingShader.ID, "ambientK");
+	int diffLoc = glGetUniformLocation(lightingShader.ID, "diffuseK");
+	int specularLoc = glGetUniformLocation(lightingShader.ID, "specularK");
+	int shininessLoc = glGetUniformLocation(lightingShader.ID, "Shininess");
 
 	float ambientK = 0.1f;
 	float diffuseK = 1.0f;
@@ -282,7 +282,7 @@ int main() {
 		texture0.Texture2D::Bind(GL_TEXTURE0); 
 		//texture1.Texture2D::Bind(GL_TEXTURE1); 
 
-		lightingShader.Shader::use();
+		//lightingShader.Shader::use();
 
 		// Set Projection
 		glm::mat4 projection;
