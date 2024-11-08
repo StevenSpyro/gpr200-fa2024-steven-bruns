@@ -20,4 +20,4 @@ target_link_libraries(gpr-200-final PUBLIC core IMGUI glm)
 target_include_directories(gpr-200-final PUBLIC ${CORE_INC_DIR} ${stb_INCLUDE_DIR})
 
 #Trigger asset copy when gpr-200-final is built
-add_dependencies(gpr-200-final copyAssetsA5)
+add_dependencies(gpr-200-final copyAssetsAF)
