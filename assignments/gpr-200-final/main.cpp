@@ -24,6 +24,9 @@ using namespace myLibrary;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
+const int MAX_TREES = 20;
+const int TERRAIN_FLOOR = 0.0f;
+
 Camera cam(glm::vec3(0.0f, 0.0f, 3.0f));
 
 void processInput(GLFWwindow* window);
@@ -131,62 +134,104 @@ int main() {
 		1, 2, 3    // second triangle
 	};
 
+	// For the base Terrain
+	glm::vec3 terrainPos;
+	terrainPos.x = 0.0f;
+	terrainPos.y = -1.0f;
+	terrainPos.z = 0.0f;
+
+	float terrainAngle;
+	terrainAngle = 0.0f;
+
+	glm::vec3 terrainRotate;
+	terrainRotate.x = 0;
+	terrainRotate.y = 0;
+	terrainRotate.z = 0;
+
+	glm::vec3 terrainScale;
+	terrainScale.x = 200.0f;
+	terrainScale.y = 1.0f;
+	terrainScale.z = 200.0f;
+
+	// For the objects on the terrain (starting with trees)
+	glm::vec3 treesPos[MAX_TREES];
+	for (int i = 0; i < MAX_TREES; i++) 
+	{
+		treesPos[i].x = i;
+		treesPos[i].y = TERRAIN_FLOOR;
+		treesPos[i].z = ew::RandomRange(-5.0, -1.0f);
+	}
+
+	float treesAngle[MAX_TREES];
+	for (int i = 0; i < MAX_TREES; i++)
+	{
+		treesAngle[i] = 0.0f;
+	}
+
+	glm::vec3 treesRotate[MAX_TREES];
+	for (int i = 0; i < MAX_TREES; i++)
+	{
+		treesRotate[i].x = 0.0f;
+		treesRotate[i].y = 0.0f;
+		treesRotate[i].z = 0.0f;
+	}
+
+	glm::vec3 treesScale[MAX_TREES];
+	for (int i = 0; i < MAX_TREES; i++)
+	{
+		treesScale[i].x = ew::RandomRange(1.0f, 20.0f);
+		treesScale[i].y = ew::RandomRange(1.0f, 20.0f);
+		treesScale[i].z = ew::RandomRange(1.0f, 20.0f);
+	}
+ 
+	
 	//Set Random Positions
-	glm::vec3 posRand;
-	posRand.x = 0.0f;
-	posRand.y = -1.0f;
-	posRand.z = 0.0f;
+
+	
 	/*
 	for (int i = 0; i < 20; i++)
 	{
-		posRand[i].x = ew::RandomRange(-5.0, 5.0f);
-		posRand[i].y = ew::RandomRange(-5.0, 5.0f);
-		posRand[i].z = ew::RandomRange(-10.0, -5.0f);
+		terrainPos[i].x = ew::RandomRange(-5.0, 5.0f);
+		terrainPos[i].y = ew::RandomRange(-5.0, 5.0f);
+		terrainPos[i].z = ew::RandomRange(-10.0, -5.0f);
 	}
 	*/
 	
 	
 
 	//Set Random Angles
-	float angleRand;
-	angleRand = 0.0f;
+	
 	/*
 	for (int i = 0; i < 20; i++)
 	{
-		angleRand[i] = ew::RandomRange(-179, 179);
+		terrainAngle[i] = ew::RandomRange(-179, 179);
 	}
 	*/
 	
 	
 
 	//Set Random Axis
-	glm::vec3 rotateAxisRand;
-	rotateAxisRand.x = 0;
-	rotateAxisRand.y = 0;
-	rotateAxisRand.z = 0;
+	
 	/*
 	for (int i = 0; i < 20; i++)
 	{
-		rotateAxisRand[i].x = ew::RandomRange(-10.0, 10.0f);
-		rotateAxisRand[i].y = ew::RandomRange(-10.0, 10.0f);
-		rotateAxisRand[i].z = ew::RandomRange(-10.0, 0.0f);
+		terrainRotate[i].x = ew::RandomRange(-10.0, 10.0f);
+		terrainRotate[i].y = ew::RandomRange(-10.0, 10.0f);
+		terrainRotate[i].z = ew::RandomRange(-10.0, 0.0f);
 	}
 	*/
 	
 	
 
 	//Set Random Scale
-	glm::vec3 scaleRand;
-	scaleRand.x = 10.0f;
-	scaleRand.y = 1.0f;
-	scaleRand.z = 200.0f;
+	
 
 	/*
 	for(int i = 0; i < 20; i++)
 	{
-		scaleRand[i].x = ew::RandomRange(1.0f, 20.0f);
-		scaleRand[i].y = ew::RandomRange(1.0f, 20.0f);
-		scaleRand[i].z = ew::RandomRange(1.0f, 20.0f);
+		terrainScale[i].x = ew::RandomRange(1.0f, 20.0f);
+		terrainScale[i].y = ew::RandomRange(1.0f, 20.0f);
+		terrainScale[i].z = ew::RandomRange(1.0f, 20.0f);
 	}
 	*/
 	
@@ -319,10 +364,25 @@ int main() {
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
 			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::scale(model, scaleRand);
-			model = glm::translate(model, posRand);
+			model = glm::scale(model, terrainScale);
+			model = glm::translate(model, terrainPos);
 			//float angle = 20.0f * i;
-			//model = glm::rotate(model, rotateTime * glm::radians(rotateAngleRand[i]), rotateAxisRand[i]);
+			//model = glm::rotate(model, rotateTime * glm::radians(rotateterrainAngle[i]), terrainRotate[i]);
+			lightingShader.setMat4("model", model);
+
+			glBindVertexArray(VAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		}
+
+		for (unsigned int i = 0; i < MAX_TREES; i++)
+		{
+			// calculate the model matrix for each object and pass it to shader before drawing
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::scale(model, treesScale[i]);
+			model = glm::translate(model, treesPos[i]);
+			//float angle = 20.0f * i;
+			//model = glm::rotate(model, rotateTime * glm::radians(rotateterrainAngle[i]), terrainRotate[i]);
 			lightingShader.setMat4("model", model);
 
 			glBindVertexArray(VAO);
