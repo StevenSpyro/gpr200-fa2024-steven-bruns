@@ -132,38 +132,67 @@ int main() {
 	};
 
 	//Set Random Positions
-	glm::vec3 posRand[20];
+	glm::vec3 posRand;
+	posRand.x = 0.0f;
+	posRand.y = -1.0f;
+	posRand.z = 0.0f;
+	/*
 	for (int i = 0; i < 20; i++)
 	{
 		posRand[i].x = ew::RandomRange(-5.0, 5.0f);
 		posRand[i].y = ew::RandomRange(-5.0, 5.0f);
 		posRand[i].z = ew::RandomRange(-10.0, -5.0f);
 	}
+	*/
+	
+	
 
 	//Set Random Angles
-	float angleRand[20];
+	float angleRand;
+	angleRand = 0.0f;
+	/*
 	for (int i = 0; i < 20; i++)
 	{
 		angleRand[i] = ew::RandomRange(-179, 179);
 	}
+	*/
+	
+	
 
 	//Set Random Axis
-	glm::vec3 rotateAxisRand[20];
+	glm::vec3 rotateAxisRand;
+	rotateAxisRand.x = 0;
+	rotateAxisRand.y = 0;
+	rotateAxisRand.z = 0;
+	/*
 	for (int i = 0; i < 20; i++)
 	{
 		rotateAxisRand[i].x = ew::RandomRange(-10.0, 10.0f);
 		rotateAxisRand[i].y = ew::RandomRange(-10.0, 10.0f);
 		rotateAxisRand[i].z = ew::RandomRange(-10.0, 0.0f);
 	}
+	*/
+	
+	
 
 	//Set Random Scale
-	glm::vec3 scaleRand[20];
+	glm::vec3 scaleRand;
+	scaleRand.x = 10.0f;
+	scaleRand.y = 1.0f;
+	scaleRand.z = 200.0f;
+
+	/*
 	for(int i = 0; i < 20; i++)
 	{
 		scaleRand[i].x = ew::RandomRange(1.0f, 20.0f);
 		scaleRand[i].y = ew::RandomRange(1.0f, 20.0f);
 		scaleRand[i].z = ew::RandomRange(1.0f, 20.0f);
 	}
+	*/
+	
+	
+
+
 
 	// Initialization Goes Here
 	unsigned int VAO, VBO, EBO;
@@ -286,12 +315,12 @@ int main() {
 		// Draw
 		glBindVertexArray(VAO);
 
-		for (unsigned int i = 0; i < 20; i++)
+		for (unsigned int i = 0; i < 21; i++)
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
 			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::scale(model, scaleRand[i]);
-			model = glm::translate(model, posRand[i]);
+			model = glm::scale(model, scaleRand);
+			model = glm::translate(model, posRand);
 			//float angle = 20.0f * i;
 			//model = glm::rotate(model, rotateTime * glm::radians(rotateAngleRand[i]), rotateAxisRand[i]);
 			lightingShader.setMat4("model", model);
