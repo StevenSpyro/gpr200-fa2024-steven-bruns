@@ -3,7 +3,7 @@ out vec4 FragColor;
 in vec4 ourColor;
 
 
-in vec2 TexCoord;
+in vec2 TexCoords;
 
 // texture sampler
 uniform sampler2D ourTexture;

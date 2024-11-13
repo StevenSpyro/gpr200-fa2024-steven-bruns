@@ -18,6 +18,7 @@ uniform float shininess;
 
 void main()
 {
+
     // Ambient
     vec3 ambient = ambientK * lightColor;
 
@@ -40,3 +41,4 @@ void main()
     vec3 result = (ambient + diffuse + specular) * textureColor;
     FragColor = vec4(result, 1.0);
 }
+
