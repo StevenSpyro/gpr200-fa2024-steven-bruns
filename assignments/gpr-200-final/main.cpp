@@ -82,6 +82,7 @@ int main() {
 
 	Shader lightingShader("assets/vertexShader.vs", "assets/fragmentShader.fs");
 	Shader lightCubeShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
+	Shader grassShader("assets/grassVertexShader.vs", "assets/grassFragmentShader.fs");
 
 	float vertices[] = {
 		//  X      Y      Z      U     V     NX     NY     NZ
@@ -126,6 +127,17 @@ int main() {
 		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,  0.0f,  1.0f,  0.0f,
 		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,  0.0f,  1.0f,  0.0f,
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  0.0f,  1.0f,  0.0f
+	};
+
+	float grassVertices[] =
+	{
+		0.0f, 0.5f,   0.0f,	 0.0f, 1.0f,
+		0.0f, -0.5f,  0.0f,  0.0f,  0.0f,
+		1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
+
+		0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
+		1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
+		1.0f,  0.5f,  0.0f,  1.0f,  1.0f
 	};
 
 	unsigned int indices[] =
@@ -263,10 +275,39 @@ int main() {
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
+	//Grass VAO and VBO
+	unsigned int grassVAO, grassVBO;
+	glGenVertexArrays(1, &grassVAO);
+	glGenBuffers(1, &grassVBO);
+	glBindVertexArray(grassVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, grassVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(grassVertices), grassVertices, GL_STATIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	glBindVertexArray(0);
+
+
 	// Grab the textures
 	Texture2D texture0("assets/Wood.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
 
 	texture0.Bind(GL_TEXTURE0);
+
+	Texture2D grassTexture("assets/GrassTexture.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE , GL_RGBA);
+	grassTexture.Bind(GL_TEXTURE1);
+
+	std::vector<glm::vec3> grass
+	{
+		glm::vec3(-1.5f, 0.0f, -0.48f),
+		glm::vec3(1.5f, 0.0f, 0.51f),
+		glm::vec3(0.0f, 0.0f, 0.7f),
+		glm::vec3(-0.3f, 0.0f, -2.3f),
+		glm::vec3(0.5f, 0.0f, -0.6f)
+	};
+
+	grassShader.use();
+	grassShader.setInt("grassTexture", 0);
 
 	// Set the textures to ints
 	lightingShader.setInt("texture0", 0);
@@ -389,7 +430,20 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		}
+		grassShader.use();
+		grassShader.setMat4("projection", projection);
+		grassShader.setMat4("view", view);
+		glBindVertexArray(grassVAO);
+		grassTexture.Bind(GL_TEXTURE0);
+		for (unsigned int i = 0; i < grass.size(); i++)
+		{
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, grass[i]);
+			grassShader.setMat4("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
 
+		glBindVertexArray(VAO);
 		// also draw the lamp object
 		lightCubeShader.use();
 		lightCubeShader.setMat4("projection", projection);
