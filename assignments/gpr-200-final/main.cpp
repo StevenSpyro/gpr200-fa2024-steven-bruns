@@ -84,6 +84,10 @@ int main() {
 	Shader lightCubeShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
 	Shader grassShader("assets/grassVertexShader.vs", "assets/grassFragmentShader.fs");
 
+	float treeVerts[] = {
+		1.0f
+	};
+
 	float vertices[] = {
 		//  X      Y      Z      U     V     NX     NY     NZ
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  0.0f,  0.0f, -1.0f,
@@ -196,61 +200,6 @@ int main() {
 		treesScale[i].z = ew::RandomRange(1.0f, 20.0f);
 	}
  
-	
-	//Set Random Positions
-
-	
-	/*
-	for (int i = 0; i < 20; i++)
-	{
-		terrainPos[i].x = ew::RandomRange(-5.0, 5.0f);
-		terrainPos[i].y = ew::RandomRange(-5.0, 5.0f);
-		terrainPos[i].z = ew::RandomRange(-10.0, -5.0f);
-	}
-	*/
-	
-	
-
-	//Set Random Angles
-	
-	/*
-	for (int i = 0; i < 20; i++)
-	{
-		terrainAngle[i] = ew::RandomRange(-179, 179);
-	}
-	*/
-	
-	
-
-	//Set Random Axis
-	
-	/*
-	for (int i = 0; i < 20; i++)
-	{
-		terrainRotate[i].x = ew::RandomRange(-10.0, 10.0f);
-		terrainRotate[i].y = ew::RandomRange(-10.0, 10.0f);
-		terrainRotate[i].z = ew::RandomRange(-10.0, 0.0f);
-	}
-	*/
-	
-	
-
-	//Set Random Scale
-	
-
-	/*
-	for(int i = 0; i < 20; i++)
-	{
-		terrainScale[i].x = ew::RandomRange(1.0f, 20.0f);
-		terrainScale[i].y = ew::RandomRange(1.0f, 20.0f);
-		terrainScale[i].z = ew::RandomRange(1.0f, 20.0f);
-	}
-	*/
-	
-	
-
-
-
 	// Initialization Goes Here
 	unsigned int VAO, VBO, EBO;
 	glGenVertexArrays(1, &VAO);
