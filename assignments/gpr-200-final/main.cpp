@@ -150,7 +150,10 @@ int main() {
 		1, 2, 3    // second triangle
 	};
 
-	// For the base Terrain
+	// Area used to make the circle | Nick.M
+	float radius = 1.0f;
+
+	// For the base Terrain | Nick.M
 	glm::vec3 terrainPos;
 	terrainPos.x = 0.0f;
 	terrainPos.y = -1.0f;
@@ -169,11 +172,11 @@ int main() {
 	terrainScale.y = 1.0f;
 	terrainScale.z = 200.0f;
 
-	// For the objects on the terrain (starting with trees)
+	// For the objects on the terrain (starting with trees) | Nick.M
 	glm::vec3 treesPos[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++) 
 	{
-		treesPos[i].x = i;
+		treesPos[i].x = i - 10;
 		treesPos[i].y = TERRAIN_FLOOR;
 		treesPos[i].z = ew::RandomRange(-5.0, -1.0f);
 	}
@@ -187,7 +190,7 @@ int main() {
 	glm::vec3 treesRotate[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++)
 	{
-		treesRotate[i].x = 0.0f;
+		treesRotate[i].x = 45.0f;
 		treesRotate[i].y = 0.0f;
 		treesRotate[i].z = 0.0f;
 	}
@@ -364,14 +367,13 @@ int main() {
 
 		}
 
+		// this part is to draw the objects on the terrrain | Nick.M
 		for (unsigned int i = 0; i < MAX_TREES; i++)
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::scale(model, treesScale[i]);
 			model = glm::translate(model, treesPos[i]);
-			//float angle = 20.0f * i;
-			//model = glm::rotate(model, rotateTime * glm::radians(rotateterrainAngle[i]), terrainRotate[i]);
 			lightingShader.setMat4("model", model);
 
 			glBindVertexArray(VAO);
