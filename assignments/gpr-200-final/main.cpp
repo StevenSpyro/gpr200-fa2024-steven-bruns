@@ -224,7 +224,7 @@ int main() {
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
-	//Grass VAO and VBO
+	//Grass VAO and VBO | Brandon Cherry
 	unsigned int grassVAO, grassVBO;
 	glGenVertexArrays(1, &grassVAO);
 	glGenBuffers(1, &grassVBO);
@@ -243,9 +243,9 @@ int main() {
 
 	texture0.Bind(GL_TEXTURE0);
 
+	//Grass Texture, vector, and shader | Brandon Cherry
 	Texture2D grassTexture("assets/GrassTexture.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE , GL_RGBA);
 	grassTexture.Bind(GL_TEXTURE1);
-
 	std::vector<glm::vec3> grass
 	{
 		glm::vec3(-1.5f, 0.0f, -0.48f),
@@ -254,7 +254,6 @@ int main() {
 		glm::vec3(-0.3f, 0.0f, -2.3f),
 		glm::vec3(0.5f, 0.0f, -0.6f)
 	};
-
 	grassShader.use();
 	grassShader.setInt("grassTexture", 0);
 
@@ -379,6 +378,7 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		}
+		//Drawing Grass using grassShader and grassVAO | Brandon Cherry
 		grassShader.use();
 		grassShader.setMat4("projection", projection);
 		grassShader.setMat4("view", view);
