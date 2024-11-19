@@ -133,15 +133,37 @@ int main() {
 		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,  0.0f,  1.0f,  0.0f
 	};
 
-	float grassVertices[] =
-	{
-		0.0f, 0.5f,   0.0f,	 0.0f, 1.0f,
-		0.0f, -0.5f,  0.0f,  0.0f,  0.0f,
-		1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
+	float grassVertices[] = { //Brandon Cherry
 
-		0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
-		1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
-		1.0f,  0.5f,  0.0f,  1.0f,  1.0f
+		// Plane 1 (aligned with the XZ plane)
+		-0.5f,  0.5f,  0.0f,   0.0f, 1.0f,  // Top-left
+		-0.5f, -0.5f,  0.0f,   0.0f, 0.0f,  // Bottom-left
+		 0.5f, -0.5f,  0.0f,   1.0f, 0.0f,  // Bottom-right
+
+		-0.5f,  0.5f,  0.0f,   0.0f, 1.0f,  // Top-left
+		 0.5f, -0.5f,  0.0f,   1.0f, 0.0f,  // Bottom-right
+		 0.5f,  0.5f,  0.0f,   1.0f, 1.0f,  // Top-right
+
+		// Plane 2 (rotated 45 degrees around Y-axis)
+		-0.35f,  0.5f, -0.35f, 0.0f, 1.0f,  // Top-left
+		-0.35f, -0.5f, -0.35f, 0.0f, 0.0f,  // Bottom-left
+		 0.35f, -0.5f,  0.35f, 1.0f, 0.0f,  // Bottom-right
+
+		-0.35f,  0.5f, -0.35f, 0.0f, 1.0f,  // Top-left
+		 0.35f, -0.5f,  0.35f, 1.0f, 0.0f,  // Bottom-right
+		 0.35f,  0.5f,  0.35f, 1.0f, 1.0f,  // Top-right
+
+
+
+		// Plane 3 (rotated -45 degrees around Y-axis)
+		-0.35f,  0.5f,  0.35f, 0.0f, 1.0f,  // Top-left
+		-0.35f, -0.5f,  0.35f, 0.0f, 0.0f,  // Bottom-left
+		 0.35f, -0.5f, -0.35f, 1.0f, 0.0f,  // Bottom-right
+
+		-0.35f,  0.5f,  0.35f, 0.0f, 1.0f,  // Top-left
+		 0.35f, -0.5f, -0.35f, 1.0f, 0.0f,  // Bottom-right
+		 0.35f,  0.5f, -0.35f, 1.0f, 1.0f   // Top-right
+
 	};
 
 	unsigned int indices[] =
@@ -251,11 +273,9 @@ int main() {
 	grassTexture.Bind(GL_TEXTURE1);
 	std::vector<glm::vec3> grass
 	{
-		glm::vec3(-1.5f, 0.0f, -0.48f),
-		glm::vec3(1.5f, 0.0f, 0.51f),
-		glm::vec3(0.0f, 0.0f, 0.7f),
-		glm::vec3(-0.3f, 0.0f, -2.3f),
-		glm::vec3(0.5f, 0.0f, -0.6f)
+		glm::vec3(0.0f,0.0f,0.0f),
+		glm::vec3(2.0f, 0.0f, -1.0f),
+		glm::vec3(0.5f,0.0f,2.5f)
 	};
 	grassShader.use();
 	grassShader.setInt("grassTexture", 0);
@@ -391,7 +411,8 @@ int main() {
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, grass[i]);
 			grassShader.setMat4("model", model);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
+
+			glDrawArrays(GL_TRIANGLES, 0, 18);
 		}
 
 		glBindVertexArray(VAO);
