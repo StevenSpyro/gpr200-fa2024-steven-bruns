@@ -276,7 +276,8 @@ int main() {
 	{
 		glm::vec3(0.0f,0.0f,0.0f),
 		glm::vec3(2.0f, 0.0f, -1.0f),
-		glm::vec3(0.5f,0.0f,2.5f)
+		glm::vec3(0.5f,0.0f,2.5f),
+		glm::vec3(5.0f, 0.0f, 2.0f)
 	};
 	grassShader.use();
 	grassShader.setInt("grassTexture", 0);
