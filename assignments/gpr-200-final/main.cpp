@@ -83,6 +83,7 @@ int main() {
 	Shader lightingShader("assets/vertexShader.vs", "assets/fragmentShader.fs");
 	Shader lightCubeShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
 	Shader grassShader("assets/grassVertexShader.vs", "assets/grassFragmentShader.fs");
+	Shader skyboxShader("assets/skybox.vs", "assets/skybox.fs");
 
 	float treeVerts[] = {
 		1.0f
