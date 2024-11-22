@@ -85,6 +85,22 @@ int main() {
 	Shader grassShader("assets/grassVertexShader.vs", "assets/grassFragmentShader.fs");
 	Shader skyboxShader("assets/skybox.vs", "assets/skybox.fs");
 
+	//Instancing | Brandon Cherry
+	glm::vec2 translations[100];
+	int index = 0;
+	float offset = 0.1f;
+	for (int y = -10; y < 10; y += 2)
+	{
+		for (int x = -10; x < 10; x += 2)
+		{
+			glm::vec2 translation;
+			translation.x = (float)x / 10.0f + offset;
+			translation.y = (float)y / 10.0f + offset;
+			translations[index++] = translation;
+		}
+	}
+
+
 	float treeVerts[] = {
 		1.0f
 	};
@@ -261,7 +277,22 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glBindVertexArray(0);
+
+
+	//Instances | Brandon Cherry
+	unsigned int instanceVBO;
+	glGenBuffers(1, &instanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations[0], GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+
+	glVertexAttribDivisor(2, 1);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
 
 
 	// Grab the textures
@@ -269,16 +300,9 @@ int main() {
 
 	texture0.Bind(GL_TEXTURE0);
 
-	//Grass Texture, vector, and shader | Brandon Cherry
+	//Grass Texture and shader | Brandon Cherry
 	Texture2D grassTexture("assets/GrassTexture.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE , GL_RGBA);
 	grassTexture.Bind(GL_TEXTURE1);
-	std::vector<glm::vec3> grass
-	{
-		glm::vec3(0.0f,0.0f,0.0f),
-		glm::vec3(2.0f, 0.0f, -1.0f),
-		glm::vec3(0.5f,0.0f,2.5f),
-		glm::vec3(5.0f, 0.0f, 2.0f)
-	};
 	grassShader.use();
 	grassShader.setInt("grassTexture", 0);
 
@@ -408,14 +432,11 @@ int main() {
 		grassShader.setMat4("view", view);
 		glBindVertexArray(grassVAO);
 		grassTexture.Bind(GL_TEXTURE0);
-		for (unsigned int i = 0; i < grass.size(); i++)
-		{
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, grass[i]);
-			grassShader.setMat4("model", model);
+		glm::mat4 model2 = glm::mat4(1.0f);
+		grassShader.setMat4("model", model2);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 18, 100);
+		
 
-			glDrawArrays(GL_TRIANGLES, 0, 18);
-		}
 
 		glBindVertexArray(VAO);
 		// also draw the lamp object
