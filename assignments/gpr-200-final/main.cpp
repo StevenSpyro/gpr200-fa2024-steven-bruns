@@ -237,6 +237,37 @@ int main() {
 	glm::vec3 treesScale[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++)
 	{
+		treesScale[i].x = 0.5f;
+		treesScale[i].y = ew::RandomRange(1.0f, 20.0f);
+		treesScale[i].z = 0.5f;
+	}
+
+	// For the objects on the terrain (starting with trees) | Nick.M
+	glm::vec3 treeTopPos[MAX_TREES];
+	for (int i = 0; i < MAX_TREES; i++)
+	{
+		treesPos[i].x = i - 10;
+		treesPos[i].y = TERRAIN_FLOOR;
+		treesPos[i].z = ew::RandomRange(-5.0, -1.0f);
+	}
+
+	float treeTopAngle[MAX_TREES];
+	for (int i = 0; i < MAX_TREES; i++)
+	{
+		treesAngle[i] = 0.0f;
+	}
+
+	glm::vec3 treeTopRotate[MAX_TREES];
+	for (int i = 0; i < MAX_TREES; i++)
+	{
+		treesRotate[i].x = 45.0f;
+		treesRotate[i].y = 0.0f;
+		treesRotate[i].z = 0.0f;
+	}
+
+	glm::vec3 treeTopScale[MAX_TREES];
+	for (int i = 0; i < MAX_TREES; i++)
+	{
 		treesScale[i].x = ew::RandomRange(1.0f, 20.0f);
 		treesScale[i].y = ew::RandomRange(1.0f, 20.0f);
 		treesScale[i].z = ew::RandomRange(1.0f, 20.0f);
