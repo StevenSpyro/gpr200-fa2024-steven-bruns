@@ -376,7 +376,7 @@ int main() {
 	glVertexAttribDivisor(2, 1);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	//Sphere VAO and VBO | Steven Bruns
+	// Sphere VAO and VBO | Steven Bruns
 
 	std::vector<float> sphereVertices;
 	std::vector<unsigned int> sphereIndices;
@@ -417,7 +417,7 @@ int main() {
 	grassShader.use();
 	grassShader.setInt("grassTexture", 0);
 
-	//Sky Sphere Texture | Steven Bruns
+	//Sky Sphere Texture | Steven Bruns from when I wanted to use a texture
 	//Texture2D skyTexture("assets/Skybox_Wall.jpg", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB);
 	//skyTexture.Bind(GL_TEXTURE2);
 	//skysphereShader.use();
@@ -463,12 +463,6 @@ int main() {
 		skysphereShader.setFloat("_Time", currentTime);
 
 		skysphereShader.use();
-
-		//glm::vec3 topColor(0.53f, 0.81f, 0.98f);  // Sky blue
-		//glm::vec3 bottomColor(0.98f, 0.64f, 0.34f);  // Light orange (sunset)
-
-		//skysphereShader.setVec3("topColor", topColor);
-		//skysphereShader.setVec3("bottomColor", bottomColor);
 
 		// Clear framebuffer
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
