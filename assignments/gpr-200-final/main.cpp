@@ -19,6 +19,11 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 
+#include <vector>
+
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 using namespace myLibrary;
 
 const int SCREEN_WIDTH = 800;
@@ -47,6 +52,28 @@ float specularK = 1.0f;
 float shininess = 32.0f;
 
 bool blinn = false;
+
+const double PI = 3.14159265358979323846;
+
+std::vector<float> generateSphereVertices(float radius, int sectors, int stacks) {
+	std::vector<float> sphereVertices;
+	for (int i = 0; i <= stacks; ++i) {
+		float stackAngle = glm::pi<float>() / 2 - i * glm::pi<float>() / stacks;  // [0, PI]
+		float xy = radius * cos(stackAngle);  // Radius at current stack level
+		float z = radius * sin(stackAngle);  // Z position
+
+		for (int j = 0; j <= sectors; ++j) {
+			float sectorAngle = j * 2 * glm::pi<float>() / sectors;  // [0, 2 * PI]
+			float x = xy * cos(sectorAngle);  // X position
+			float y = xy * sin(sectorAngle);  // Y position
+
+			sphereVertices.push_back(x);
+			sphereVertices.push_back(y);
+			sphereVertices.push_back(z);
+		}
+	}
+	return sphereVertices;
+}
 
 int main() {
 	printf("Initializing...");
@@ -272,6 +299,11 @@ int main() {
 		treesScale[i].y = ew::RandomRange(1.0f, 20.0f);
 		treesScale[i].z = ew::RandomRange(1.0f, 20.0f);
 	}
+	
+	//Geometry for the Sky Sphere
+	const int X_SEGMENTS = 64;
+	const int Y_SEGMENTS = 64;
+	const float RADIUS = 1.0f;
  
 	// Initialization Goes Here
 	unsigned int VAO, VBO, EBO;
@@ -324,7 +356,20 @@ int main() {
 	glVertexAttribDivisor(2, 1);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
+	//Sphere VAO and VBO | Steven Bruns
+	
+	unsigned int sphereVAO, sphereVBO;
 
+	std::vector<float> sphereVertices = generateSphereVertices(1000.0f, 50, 50);
+
+	glGenVertexArrays(1, &sphereVAO);
+	glGenBuffers(1, &sphereVBO);
+
+	glBindVertexArray(sphereVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
+	glBufferData(GL_ARRAY_BUFFER, sphereVertices.size() * sizeof(float), &sphereVertices[0], GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);	
 
 	// Grab the textures
 	Texture2D texture0("assets/Wood.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
@@ -336,6 +381,12 @@ int main() {
 	grassTexture.Bind(GL_TEXTURE1);
 	grassShader.use();
 	grassShader.setInt("grassTexture", 0);
+
+	//Sky Sphere Texture | Steven Bruns
+	Texture2D skyTexture("assets/Skybox_Wall.jpg", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB);
+	skyTexture.Bind(GL_TEXTURE2);
+	skyboxShader.use();
+	skyboxShader.setInt("skyboxTexture", 0);
 
 	// Set the textures to ints
 	lightingShader.setInt("texture0", 0);
@@ -414,19 +465,46 @@ int main() {
 			projection = glm::perspective(glm::radians(cam.Zoom), 800.0f / 600.0f, 0.1f, 1000.0f);
 		}
 
-		//Original integration before Ortho
-		/*
-		glm::mat4 projection = glm::perspective(glm::radians(cam.Zoom), 800.0f / 600.0f, 0.1f, 1000.0f);
-		bgShader.setMat4("projection", projection);
-		*/
-
 		// Set View
 		glm::mat4 view = cam.GetViewMatrix();
 		lightingShader.setMat4("projection", projection);
 		lightingShader.setMat4("view", view);
 
+		GLuint skyboxTextureID = skyTexture.getID();
 
 		// Draw
+		glDepthMask(GL_FALSE);
+		glDepthFunc(GL_LEQUAL);
+
+		skyboxShader.use();
+
+		// Set the view and projection matrices for the camera
+		//glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / SCREEN_HEIGHT, 0.1f, 100.0f);
+		//glm::mat4 view = glm::mat4(1.0f);  
+		//view = glm::mat4(glm::mat3(cam.GetViewMatrix()));  
+		
+		skyboxShader.setMat4("projection", projection);
+		skyboxShader.setMat4("view", view);
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, skyboxTextureID);
+
+		// Draw the sphere 
+		glBindVertexArray(sphereVAO);
+		glDrawArrays(GL_TRIANGLES, 0, sphereVertices.size());
+		glBindVertexArray(0);
+	
+		glDepthMask(GL_TRUE);
+		glDepthFunc(GL_LESS);
+
+		//glEnable(GL_CULL_FACE);  // Enable culling
+		glCullFace(GL_BACK);    
+		glDisable(GL_CULL_FACE);
+
+		//glDepthMask(GL_TRUE);
+
+		lightingShader.use();
+
 		glBindVertexArray(VAO);
 
 		for (unsigned int i = 0; i < 21; i++)
@@ -467,8 +545,6 @@ int main() {
 		grassShader.setMat4("model", model2);
 		glDrawArraysInstanced(GL_TRIANGLES, 0, 18, 100);
 		
-
-
 		glBindVertexArray(VAO);
 		// also draw the lamp object
 		lightCubeShader.use();
@@ -542,10 +618,6 @@ void processInput(GLFWwindow* window)
 	{
 		glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	}
-	//if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS)
-	//{
-	//	isOrthograph = !isOrthograph;
-	//}
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
 	{
 		cam.ProcessKeyboard(FORWARD, deltaTime);
@@ -606,3 +678,46 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	cam.ProcessMouseScroll(yoffset);
 }
+
+
+/*
+	std::vector<float> sphereVertices;
+
+	for (int y = 0; y <= Y_SEGMENTS; ++y)
+	{
+		for (int x = 0; x <= X_SEGMENTS; ++x)
+		{
+			float xSegment = (float)x / X_SEGMENTS;
+			float ySegment = (float)y / Y_SEGMENTS;
+
+			float theta = xSegment * 2.0f * PI;
+			float phi = ySegment * PI;
+
+			float xPos = RADIUS * sinf(phi) * cosf(theta);
+			float yPos = RADIUS * cosf(phi);
+			float zPos = RADIUS * sinf(phi) * sinf(theta);
+
+			//Normal
+			glm::vec3 normal = glm::normalize(glm::vec3(xPos, yPos, zPos));
+
+			//Texture Coordinates
+			float u = xSegment;
+			float v = ySegment;
+
+
+			//Vertex Data
+			sphereVertices.push_back(xPos);
+			sphereVertices.push_back(yPos);
+			sphereVertices.push_back(zPos);
+
+			//Texture the Coordinates
+			sphereVertices.push_back(u);
+			sphereVertices.push_back(v);
+
+			//Normals
+			sphereVertices.push_back(normal.x);
+			sphereVertices.push_back(normal.y);
+			sphereVertices.push_back(normal.z);
+		}
+	}
+	*/
