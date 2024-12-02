@@ -1,3 +1,7 @@
+//Steven Bruns
+//Went absolutely crazy trying to get a texture to place on the sphere.
+//Had inpiration from Eric Weinbrenner's Examples. Thank you for having that cause I was going insane doing a texture.
+
 #version 330 core
 out vec4 FragColor;
 
