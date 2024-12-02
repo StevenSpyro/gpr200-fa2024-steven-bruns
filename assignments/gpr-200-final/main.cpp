@@ -53,10 +53,12 @@ float shininess = 32.0f;
 
 bool blinn = false;
 
+// Set Sun Speed
+float sunSpeed = 0.25;
+
 const double PI = 3.14159265358979323846;
 
-std::vector<float> generateSphereVertices(float radius, int sectors, int stacks) {
-	std::vector<float> sphereVertices;
+void generateSphereVertices(float radius, int sectors, int stacks, std::vector<float>& sphereVertices, std::vector<unsigned int>& sphereIndices) {
 	for (int i = 0; i <= stacks; ++i) {
 		float stackAngle = glm::pi<float>() / 2 - i * glm::pi<float>() / stacks;  // [0, PI]
 		float xy = radius * cos(stackAngle);  // Radius at current stack level
@@ -67,12 +69,30 @@ std::vector<float> generateSphereVertices(float radius, int sectors, int stacks)
 			float x = xy * cos(sectorAngle);  // X position
 			float y = xy * sin(sectorAngle);  // Y position
 
+			float u = (float)j / sectors;
+			float v = (float)i / stacks;
+
 			sphereVertices.push_back(x);
 			sphereVertices.push_back(y);
 			sphereVertices.push_back(z);
+			sphereVertices.push_back(u);
+			sphereVertices.push_back(v);
+
+			// Generate indices for the triangles
+			if (i < stacks && j < sectors) {
+				unsigned int first = (i * (sectors + 1)) + j;
+				unsigned int second = first + sectors + 1;
+
+				sphereIndices.push_back(first);
+				sphereIndices.push_back(second);
+				sphereIndices.push_back(first + 1);
+
+				sphereIndices.push_back(second);
+				sphereIndices.push_back(second + 1);
+				sphereIndices.push_back(first + 1);
+			}
 		}
 	}
-	return sphereVertices;
 }
 
 int main() {
@@ -110,7 +130,7 @@ int main() {
 	Shader lightingShader("assets/vertexShader.vs", "assets/fragmentShader.fs");
 	Shader lightCubeShader("assets/vertexShaderBG.vs", "assets/fragmentShaderBG.fs");
 	Shader grassShader("assets/grassVertexShader.vs", "assets/grassFragmentShader.fs");
-	Shader skyboxShader("assets/skybox.vs", "assets/skybox.fs");
+	Shader skysphereShader("assets/skybox.vs", "assets/skybox.fs");
 
 	//Instancing | Brandon Cherry
 	glm::vec2 translations[100];
@@ -323,10 +343,10 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	// Normal attribute
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
 	//Grass VAO and VBO | Brandon Cherry
@@ -357,19 +377,34 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	//Sphere VAO and VBO | Steven Bruns
-	
-	unsigned int sphereVAO, sphereVBO;
 
-	std::vector<float> sphereVertices = generateSphereVertices(1000.0f, 50, 50);
+	std::vector<float> sphereVertices;
+	std::vector<unsigned int> sphereIndices;
 
+	generateSphereVertices(1000.0f, 50, 50, sphereVertices, sphereIndices);
+
+	GLuint sphereVAO, sphereVBO, sphereEBO;
 	glGenVertexArrays(1, &sphereVAO);
 	glGenBuffers(1, &sphereVBO);
+	glGenBuffers(1, &sphereEBO);
 
 	glBindVertexArray(sphereVAO);
+
 	glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
 	glBufferData(GL_ARRAY_BUFFER, sphereVertices.size() * sizeof(float), &sphereVertices[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);	
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sphereIndices.size() * sizeof(unsigned int), &sphereIndices[0], GL_STATIC_DRAW);
+
+	// Setup vertex attributes
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0); // Position
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))); // UVs
+	glEnableVertexAttribArray(1);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 
 	// Grab the textures
 	Texture2D texture0("assets/Wood.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
@@ -383,10 +418,10 @@ int main() {
 	grassShader.setInt("grassTexture", 0);
 
 	//Sky Sphere Texture | Steven Bruns
-	Texture2D skyTexture("assets/Skybox_Wall.jpg", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB);
-	skyTexture.Bind(GL_TEXTURE2);
-	skyboxShader.use();
-	skyboxShader.setInt("skyboxTexture", 0);
+	//Texture2D skyTexture("assets/Skybox_Wall.jpg", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB);
+	//skyTexture.Bind(GL_TEXTURE2);
+	//skysphereShader.use();
+	//skysphereShader.setInt("skyboxTexture", 2);
 
 	// Set the textures to ints
 	lightingShader.setInt("texture0", 0);
@@ -424,6 +459,17 @@ int main() {
 		// Set Time
 		float time = (float)glfwGetTime();
 
+		float currentTime = glfwGetTime();
+		skysphereShader.setFloat("_Time", currentTime);
+
+		skysphereShader.use();
+
+		//glm::vec3 topColor(0.53f, 0.81f, 0.98f);  // Sky blue
+		//glm::vec3 bottomColor(0.98f, 0.64f, 0.34f);  // Light orange (sunset)
+
+		//skysphereShader.setVec3("topColor", topColor);
+		//skysphereShader.setVec3("bottomColor", bottomColor);
+
 		// Clear framebuffer
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -434,9 +480,8 @@ int main() {
 		glUniform1f(specularLoc, specularK);
 		glUniform1f(shininessLoc, shininess);
 
-		//Activate Shader to set uniforms/draw objects
-
 		lightingShader.use();
+		//glBindTexture(GL_TEXTURE_2D, texture0.getID()); 
 		lightingShader.setVec3("lightPos", lightPos);
 		lightingShader.setVec3("lightColor", lightColor);
 		lightingShader.setVec3("viewPos", cam.Position);
@@ -446,62 +491,42 @@ int main() {
 		lightingShader.setFloat("specularK", specularK);
 		lightingShader.setFloat("shininess", shininess);
 
-		texture0.Bind(GL_TEXTURE0);
 
 		glUniform1f(timeLoc, time);
 
-		// Bind 
-		texture0.Texture2D::Bind(GL_TEXTURE0); 
-
 		// Set Projection
-		glm::mat4 projection;
-		if (isOrthograph)
-		{
-			float aspectRatio = 800.0f / 600.0f;
-			projection = glm::ortho(-10.0f, 10.0f, -10.0f / aspectRatio, 0.5f / aspectRatio, 0.1f, 100.0f);
-		}
-		else
-		{
-			projection = glm::perspective(glm::radians(cam.Zoom), 800.0f / 600.0f, 0.1f, 1000.0f);
-		}
-
-		// Set View
+		glm::mat4 projection = glm::perspective(glm::radians(cam.Zoom), (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 0.1f, 1000.0f);
 		glm::mat4 view = cam.GetViewMatrix();
-		lightingShader.setMat4("projection", projection);
-		lightingShader.setMat4("view", view);
 
-		GLuint skyboxTextureID = skyTexture.getID();
-
-		// Draw
+		// Draw SkySphere
+		glDisable(GL_DEPTH_TEST); //DISABLE
 		glDepthMask(GL_FALSE);
 		glDepthFunc(GL_LEQUAL);
 
-		skyboxShader.use();
+		skysphereShader.use();
+		skysphereShader.setMat4("_ViewProjection", projection * view);
+		skysphereShader.setFloat("_Time", glfwGetTime());
+		skysphereShader.setVec3("sunCol", glm::vec3(1.0f, 0.8f, 0.5f));
+		glm::mat4 sphereModel = glm::scale(glm::mat4(1.0f), glm::vec3(1000.0f));
+		skysphereShader.setMat4("_Model", sphereModel);
+		skysphereShader.setFloat("sunSpeed", sunSpeed);
 
-		// Set the view and projection matrices for the camera
-		//glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)SCREEN_WIDTH / SCREEN_HEIGHT, 0.1f, 100.0f);
-		//glm::mat4 view = glm::mat4(1.0f);  
-		//view = glm::mat4(glm::mat3(cam.GetViewMatrix()));  
-		
-		skyboxShader.setMat4("projection", projection);
-		skyboxShader.setMat4("view", view);
-
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, skyboxTextureID);
-
-		// Draw the sphere 
 		glBindVertexArray(sphereVAO);
-		glDrawArrays(GL_TRIANGLES, 0, sphereVertices.size());
-		glBindVertexArray(0);
+		glDrawArrays(GL_TRIANGLES, 0, sphereVertices.size() / 5);
+		glDrawElements(GL_TRIANGLES, sphereIndices.size(), GL_UNSIGNED_INT, 0);
 	
 		glDepthMask(GL_TRUE);
-		glDepthFunc(GL_LESS);
+		glDepthFunc(GL_LESS); // Default depth function
+		glEnable(GL_DEPTH_TEST); // Re-enable depth testing
 
-		//glEnable(GL_CULL_FACE);  // Enable culling
-		glCullFace(GL_BACK);    
-		glDisable(GL_CULL_FACE);
+		// Bind 
+		texture0.Bind(GL_TEXTURE0);
+		texture0.Texture2D::Bind(GL_TEXTURE0);
 
-		//glDepthMask(GL_TRUE);
+		//Activate Shader to set uniforms/draw objects
+		lightingShader.use();
+		lightingShader.setMat4("projection", projection);
+		lightingShader.setMat4("view", view);
 
 		lightingShader.use();
 
@@ -521,8 +546,8 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		}
-
-		// this part is to draw the objects on the terrrain | Nick.M
+		
+		// this part is to draw the objects on the terrain | Nick.M
 		for (unsigned int i = 0; i < MAX_TREES; i++)
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
@@ -535,6 +560,7 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		}
+
 		//Drawing Grass using grassShader and grassVAO | Brandon Cherry
 		grassShader.use();
 		grassShader.setMat4("projection", projection);
@@ -582,6 +608,7 @@ int main() {
 		ImGui::SliderFloat("Diffuse K", &diffuseK, 0.0f, 1.0f);
 		ImGui::SliderFloat("Specular K", &specularK, 0.0f, 1.0f);
 		ImGui::SliderFloat("Shininess", &shininess, 2.0f, 1024.0f);
+		ImGui::SliderFloat("Sun Speed", &sunSpeed, 0.01f, 1.0f);
 
 		ImGui::End();
 
@@ -678,46 +705,3 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
 	cam.ProcessMouseScroll(yoffset);
 }
-
-
-/*
-	std::vector<float> sphereVertices;
-
-	for (int y = 0; y <= Y_SEGMENTS; ++y)
-	{
-		for (int x = 0; x <= X_SEGMENTS; ++x)
-		{
-			float xSegment = (float)x / X_SEGMENTS;
-			float ySegment = (float)y / Y_SEGMENTS;
-
-			float theta = xSegment * 2.0f * PI;
-			float phi = ySegment * PI;
-
-			float xPos = RADIUS * sinf(phi) * cosf(theta);
-			float yPos = RADIUS * cosf(phi);
-			float zPos = RADIUS * sinf(phi) * sinf(theta);
-
-			//Normal
-			glm::vec3 normal = glm::normalize(glm::vec3(xPos, yPos, zPos));
-
-			//Texture Coordinates
-			float u = xSegment;
-			float v = ySegment;
-
-
-			//Vertex Data
-			sphereVertices.push_back(xPos);
-			sphereVertices.push_back(yPos);
-			sphereVertices.push_back(zPos);
-
-			//Texture the Coordinates
-			sphereVertices.push_back(u);
-			sphereVertices.push_back(v);
-
-			//Normals
-			sphereVertices.push_back(normal.x);
-			sphereVertices.push_back(normal.y);
-			sphereVertices.push_back(normal.z);
-		}
-	}
-	*/

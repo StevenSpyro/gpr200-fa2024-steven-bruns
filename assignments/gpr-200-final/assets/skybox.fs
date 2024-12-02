@@ -1,31 +1,41 @@
 #version 330 core
 out vec4 FragColor;
-in vec3 TexCoords;
 
-//uniform samplerCube skybox; //Skybox
-uniform vec3 skyColor; //Sky Color
-uniform sampler2D skyTexture; //Black and White Gradient
+in vec3 Pos;
+in vec2 UV;
 
-void main()
-{
-    float u = 0.5 + atan(TexCoords.z, TexCoords.x) / (2.0 * 3.141592653589793);
-    float v = 0.5 - asin(TexCoords.y) / 3.141592653589793; 
+uniform float _Time;
+uniform float sunSpeed;  // Set the Speed of the sun
 
-    float brightness = texture(skyTexture, vec2(u,v)).r; //Needed for the Black and White image
-    vec3 color = mix(vec3(0.0), skyColor, brightness); //Grayscale can be color.
-    FragColor = vec4(color, 1.0);
+void main(){
+    // Set the colors for the sky during the day and night
+    vec3 sunsetCol = vec3(0.7, 0.4, 0.2);  // Sunset orange
+    vec3 twilightCol = vec3(95.0/255.0, 84.0/255.0, 153.0/255.0); // Twilight purple
+
+    // Adjust the sun's speed
+    float adjustedTime = _Time * sunSpeed;  
+
+    // Sun's vertical position controlled by adjustedTime
+    float sunHeight = sin(adjustedTime); 
+
+    // Mix the colors based on sun's height
+    vec3 col = mix(twilightCol, sunsetCol, (sunHeight + 1.0) * 0.5); 
+
+    // Simulate the sun's color and intensity
+    vec3 sunDir = vec3(0.0, sin(adjustedTime), cos(adjustedTime)); 
+    sunDir = normalize(sunDir);
+
+    // Dot product for the intensity of sunlight based on surface normal
+    vec3 normal = normalize(Pos);
+    float sunIntensity = max(dot(sunDir, normal), 0.0);
+    sunIntensity = pow(sunIntensity, 128.0); // Sharp intensity effect
+
+    // Sun color (orange/yellow)
+    vec3 sunCol = vec3(1.0, 0.6, 0.2) * sunIntensity;
+
+    // Add the sun color on top of the sky
+    col += sunCol;
+
+    // Final output
+    FragColor = vec4(col, 1.0);
 }
-
-
-/*
-in vec3 texCoords;
-
-uniform samplerCube skybox;
-
-void main()
-{
-    FragColor = texture(skybox, texCoords);
-}
-*/
-
-//FragColor = vec4(color, 1.0);
