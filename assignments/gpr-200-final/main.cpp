@@ -51,6 +51,10 @@ float diffuseK = 1.0f;
 float specularK = 1.0f;
 float shininess = 32.0f;
 
+const int GRASS_OBJECT_NUM = 90000;
+glm::vec3 windDir(2.0f, 0.0f, 0.0f);
+float windSpeed = 1.0f;
+
 bool blinn = false;
 
 // Set Sun Speed
@@ -133,16 +137,16 @@ int main() {
 	Shader skysphereShader("assets/skybox.vs", "assets/skybox.fs");
 
 	//Instancing | Brandon Cherry
-	glm::vec2 translations[100];
+	glm::vec2 translations[GRASS_OBJECT_NUM];
 	int index = 0;
-	float offset = 0.1f;
-	for (int y = -10; y < 10; y += 2)
+	float offset = 0.5f;
+	for (int y = -300; y < 300; y += 2)
 	{
-		for (int x = -10; x < 10; x += 2)
+		for (int x = -300; x < 300; x += 2)
 		{
 			glm::vec2 translation;
-			translation.x = (float)x / 10.0f + offset;
-			translation.y = (float)y / 10.0f + offset;
+			translation.x = (float)x / 7.0f + offset;
+			translation.y = (float)y / 7.0f + offset;
 			translations[index++] = translation;
 		}
 	}
@@ -366,7 +370,7 @@ int main() {
 	unsigned int instanceVBO;
 	glGenBuffers(1, &instanceVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations[0], GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * GRASS_OBJECT_NUM, &translations[0], GL_STATIC_DRAW);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glEnableVertexAttribArray(2);
@@ -416,6 +420,9 @@ int main() {
 	grassTexture.Bind(GL_TEXTURE1);
 	grassShader.use();
 	grassShader.setInt("grassTexture", 0);
+	
+	
+	
 
 	//Sky Sphere Texture | Steven Bruns from when I wanted to use a texture
 	//Texture2D skyTexture("assets/Skybox_Wall.jpg", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB);
@@ -563,7 +570,11 @@ int main() {
 		grassTexture.Bind(GL_TEXTURE0);
 		glm::mat4 model2 = glm::mat4(1.0f);
 		grassShader.setMat4("model", model2);
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 18, 100);
+		grassShader.setFloat("_time", time);
+
+		grassShader.setFloat("windSpeed", windSpeed);
+		grassShader.setVec3("windDirection", windDir);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 18, GRASS_OBJECT_NUM);
 		
 		glBindVertexArray(VAO);
 		// also draw the lamp object
@@ -603,6 +614,9 @@ int main() {
 		ImGui::SliderFloat("Specular K", &specularK, 0.0f, 1.0f);
 		ImGui::SliderFloat("Shininess", &shininess, 2.0f, 1024.0f);
 		ImGui::SliderFloat("Sun Speed", &sunSpeed, 0.01f, 1.0f);
+
+		ImGui::DragFloat3("Wind Direction", &windDir.x, 0.1f);
+		ImGui::SliderFloat("Wind Speed", &windSpeed, 0.0f, 2.5f);
 
 		ImGui::End();
 

@@ -9,10 +9,31 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+uniform float _time;
+uniform float windSpeed;
+uniform vec3 windDirection;
+
 
 
 void main()
 {
     TexCoords = aTexCoords;
-    gl_Position = projection * view * model * vec4(aPos.x + aOffset.x, aPos.y, aPos.z + aOffset.y, 1.0);
+
+    
+    vec3 normalWind = normalize(windDirection);
+    
+    float bend = aPos.y * windSpeed;
+    vec3 bendOffset = normalWind * bend;
+
+    float sway = sin(aPos.y * 3.0 + _time * 2.0) * 0.1;
+    vec3 swayOffset = normalWind * sway;
+
+    vec4 worldPos = model * vec4(aPos + bendOffset + swayOffset, 1.0);
+    worldPos.x += aOffset.x;
+    worldPos.z += aOffset.y;
+
+    
+    gl_Position = projection * view * worldPos;
+
+   
 }
