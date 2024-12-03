@@ -243,6 +243,51 @@ int main() {
 	// Area used to make the circle | Nick.M
 	float radius = 1.0f;
 
+	// Area used to make the tree |Nick.M
+	// also made with the help of Eric WineBrenner's example
+	struct treeVertex
+	{
+		glm::vec3 pos = glm::vec3(0);
+		glm::vec3 normal = glm::vec3(0);
+		glm::vec2 uv = glm::vec2(0);
+
+		treeVertex() {}
+
+		treeVertex(glm::vec3& pos, glm::vec3& normal, glm::vec2& uv) : pos(pos), normal(normal), uv(uv) {}
+	};
+
+	// for the indicies
+	// Placeholder number for now, replace with subdivisions later
+	// may also need columns later
+	for (int r = 0; r < 8; r++)
+	{
+		unsigned int bottomLeft = r * (8);
+		unsigned int bottomRight = bottomLeft + 1;
+		unsigned int topLeft = bottomLeft + (8) + 1;
+		unsigned int topRight = topLeft + 1;
+		// set this later as (bL, bR, tR)  (tR, tL, bL)
+	}
+
+	// Numbers jst in case I need them 
+	float cRadius = 5.0f; 
+	int magicNum = 8; // this will be subDivisions later
+	float theta = 2 * 3.141 / magicNum;
+	float phi = 3.141 / magicNum;
+
+	for (int row = 0; row <= magicNum; row++)
+	{
+		glm::vec3 pos;
+		pos.x = cRadius * sinf(phi * row) * cosf(theta);
+		pos.y = cRadius + row;
+		pos.z = cRadius * sinf(phi * row) * sinf(theta);
+
+		glm::vec3 normal = glm::normalize(pos);
+
+		glm::vec2 uv;
+		uv.x = 1.0 - (1 / magicNum);
+		uv.y = 1.0 - ((float)row / magicNum);
+	}
+
 	// For the base Terrain | Nick.M
 	glm::vec3 terrainPos;
 	terrainPos.x = 0.0f;
@@ -409,6 +454,8 @@ int main() {
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+
+	// This will be for tree attributes | Nick.M
 
 	// Grab the textures
 	Texture2D texture0("assets/Wood.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
