@@ -136,8 +136,8 @@ int main() {
 	Shader grassShader("assets/grassVertexShader.vs", "assets/grassFragmentShader.fs");
 	Shader skysphereShader("assets/skybox.vs", "assets/skybox.fs");
 
-	//Instancing | Brandon Cherry
-	glm::vec2 translations[GRASS_OBJECT_NUM];
+	//Instancing Setup | Brandon Cherry
+	glm::vec2* translations = new glm::vec2[GRASS_OBJECT_NUM]; //Allocated on the Heap
 	int index = 0;
 	float offset = 0.5f;
 	for (int y = -300; y < 300; y += 2)
@@ -680,6 +680,8 @@ int main() {
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteVertexArrays(1, &VAO);
 	glDeleteBuffers(1, &VBO);
+
+	delete[] translations; //Deallocate translations on the heap
 	glfwTerminate();
 
 	printf("Shutting down...");
