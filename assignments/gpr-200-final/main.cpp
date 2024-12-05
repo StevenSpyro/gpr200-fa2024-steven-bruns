@@ -29,7 +29,8 @@ using namespace myLibrary;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
-const int MAX_TREES = 20;
+const int MAX_TREES = 50;
+const int TREE_SPACING = 4;
 const int TERRAIN_FLOOR = 0.0f;
 
 Camera cam(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -240,9 +241,6 @@ int main() {
 		1, 2, 3    // second triangle
 	};
 
-	// Area used to make the circle | Nick.M
-	float radius = 1.0f;
-
 	// Area used to make the tree |Nick.M
 	// also made with the help of Eric WineBrenner's example
 	struct treeVertex
@@ -256,36 +254,58 @@ int main() {
 		treeVertex(glm::vec3& pos, glm::vec3& normal, glm::vec2& uv) : pos(pos), normal(normal), uv(uv) {}
 	};
 
+	std::vector<treeVertex> treeVertices;
+	std::vector<unsigned int> treeIndices;
+
 	// for the indicies
 	// Placeholder number for now, replace with subdivisions later
 	// may also need columns later
-	for (int r = 0; r < 8; r++)
+
+	int SubDivisions = 8; // this will be subDivisions later
+
+	for (int r = 0; r < SubDivisions; r++)
 	{
-		unsigned int bottomLeft = r * (8);
+		unsigned int bottomLeft = r * SubDivisions;
 		unsigned int bottomRight = bottomLeft + 1;
-		unsigned int topLeft = bottomLeft + (8) + 1;
+		unsigned int topLeft = bottomLeft + SubDivisions + 1;
 		unsigned int topRight = topLeft + 1;
+
+		treeIndices.push_back(bottomLeft);
+		treeIndices.push_back(bottomRight);
+		treeIndices.push_back(topLeft);
+		treeIndices.push_back(topRight);
 		// set this later as (bL, bR, tR)  (tR, tL, bL)
 	}
 
 	// Numbers jst in case I need them 
-	float cRadius = 5.0f; 
-	int magicNum = 8; // this will be subDivisions later
-	float theta = 2 * 3.141 / magicNum;
-	float phi = 3.141 / magicNum;
+	float cRad = 5.0f; 
+	float theta = 2 * 3.141 / SubDivisions;
+	float phi = 3.141 / SubDivisions;
+	int numSegments = 4;
 
-	for (int row = 0; row <= magicNum; row++)
+	
+	for (int row = 0; row <= SubDivisions; row++)
 	{
-		glm::vec3 pos;
-		pos.x = cRadius * sinf(phi * row) * cosf(theta);
-		pos.y = cRadius + row;
-		pos.z = cRadius * sinf(phi * row) * sinf(theta);
+		for (int j = 0; j < numSegments; j++) 
+		{
+			glm::vec3 pos;
+			pos.x = (cRad * cosf(theta * row)) / numSegments;
+			pos.y = cRad * (float)row / SubDivisions;
+			pos.z = (cRad * sinf(theta * row)) / numSegments;
 
-		glm::vec3 normal = glm::normalize(pos);
+			glm::vec3 normal = glm::normalize(pos);
 
-		glm::vec2 uv;
-		uv.x = 1.0 - (1 / magicNum);
-		uv.y = 1.0 - ((float)row / magicNum);
+			glm::vec2 uv;
+			uv.x = 1.0 - (1 / SubDivisions);
+			uv.y = 1.0 - ((float)row / SubDivisions);
+
+			treeVertex tV;
+			tV.pos = pos;
+			tV.normal = normal;
+			tV.uv = uv;
+
+			treeVertices.push_back(tV);
+		}
 	}
 
 	// For the base Terrain | Nick.M
@@ -311,9 +331,9 @@ int main() {
 	glm::vec3 treesPos[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++) 
 	{
-		treesPos[i].x = i - 10;
+		treesPos[i].x = (MAX_TREES * TREE_SPACING) - (TREE_SPACING*2*i);
 		treesPos[i].y = TERRAIN_FLOOR;
-		treesPos[i].z = ew::RandomRange(-5.0, -1.0f);
+		treesPos[i].z = ew::RandomRange(-100.0, -1.0f);
 	}
 
 	float treesAngle[MAX_TREES];
@@ -334,39 +354,39 @@ int main() {
 	for (int i = 0; i < MAX_TREES; i++)
 	{
 		treesScale[i].x = 0.5f;
-		treesScale[i].y = ew::RandomRange(1.0f, 20.0f);
+		treesScale[i].y = ew::RandomRange(2.5f, 10.0f);
 		treesScale[i].z = 0.5f;
 	}
 
-	// For the objects on the terrain (starting with trees) | Nick.M
+	// For the objects on the terrain (starting with treetops) | Nick.M
 	glm::vec3 treeTopPos[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++)
 	{
-		treesPos[i].x = i - 10;
-		treesPos[i].y = TERRAIN_FLOOR;
-		treesPos[i].z = ew::RandomRange(-5.0, -1.0f);
+		treeTopPos[i].x = treesPos[i].x;
+		treeTopPos[i].y = treesPos[i].y + treesScale[i].y;
+		treeTopPos[i].z = treesPos[i].z;
 	}
 
 	float treeTopAngle[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++)
 	{
-		treesAngle[i] = 0.0f;
+		treeTopAngle[i] = 0.0f;
 	}
 
 	glm::vec3 treeTopRotate[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++)
 	{
-		treesRotate[i].x = 45.0f;
-		treesRotate[i].y = 0.0f;
-		treesRotate[i].z = 0.0f;
+		treeTopRotate[i].x = 45.0f;
+		treeTopRotate[i].y = 0.0f;
+		treeTopRotate[i].z = 0.0f;
 	}
 
 	glm::vec3 treeTopScale[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++)
 	{
-		treesScale[i].x = ew::RandomRange(1.0f, 20.0f);
-		treesScale[i].y = ew::RandomRange(1.0f, 20.0f);
-		treesScale[i].z = ew::RandomRange(1.0f, 20.0f);
+		treeTopScale[i].x = 2.0f;
+		treeTopScale[i].y = ew::RandomRange(1.0f, 20.0f);
+		treeTopScale[i].z = 2.0f;
 	}
 	
 	//Geometry for the Sky Sphere
@@ -456,6 +476,32 @@ int main() {
 	glBindVertexArray(0);
 
 	// This will be for tree attributes | Nick.M
+	
+	unsigned int treeVAO, treeVBO, TreeEBO;
+	glGenVertexArrays(1, &treeVAO);
+	glGenBuffers(1, &treeVBO);
+	glGenBuffers(1, &TreeEBO);
+
+	glBindVertexArray(treeVAO);
+
+	glBindBuffer(GL_ARRAY_BUFFER, treeVBO);
+	glBufferData(GL_ARRAY_BUFFER, treeVertices.size() * sizeof(float), &treeVertices[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TreeEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, treeIndices.size() * sizeof(unsigned int), &treeIndices[0], GL_STATIC_DRAW);
+
+	// Setup vertex attributes
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(treeVertex), (void*)0); // Position
+	glEnableVertexAttribArray(0);
+
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(treeVertex), (void*)(3 * sizeof(float))); // UVs
+	glEnableVertexAttribArray(1);
+
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(treeVertex), (void*)(6 * sizeof(float))); // UVs
+	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
 
 	// Grab the textures
 	Texture2D texture0("assets/Wood.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
@@ -608,6 +654,19 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		}
+
+		// for the tree tops to appear | Nick.M
+		for (int i = 0; i < MAX_TREES; i++) 
+		{
+			glm::mat4 treeModel = glm::mat4(1.0f);
+			treeModel = glm::scale(treeModel, treeTopScale[i]);
+			treeModel = glm::translate(treeModel, treeTopPos[i]);
+			lightingShader.setMat4("model", treeModel);
+
+			glBindVertexArray(treeVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
+		
 
 		//Drawing Grass using grassShader and grassVAO | Brandon Cherry
 		grassShader.use();
