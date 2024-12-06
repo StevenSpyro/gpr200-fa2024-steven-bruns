@@ -15,7 +15,7 @@ set(CORE_INC_DIR
  CACHE PATH "CORE INCLUDE SOURCE PATH"
 )
 
-add_library(core STATIC ${CORE_SRC} ${CORE_INC}  "MyLibrary/camera.cpp" "MyLibrary/camera.h"  )
+add_library(core STATIC ${CORE_SRC} ${CORE_INC}  "MyLibrary/camera.cpp" "MyLibrary/camera.h" )
 
 find_package(OpenGL REQUIRED)
 

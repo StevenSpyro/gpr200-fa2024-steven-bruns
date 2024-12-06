@@ -29,6 +29,10 @@ using namespace myLibrary;
 const int SCREEN_WIDTH = 800;
 const int SCREEN_HEIGHT = 600;
 
+const unsigned int SHADOW_WIDTH = 1024;  // Width of the shadow map
+const unsigned int SHADOW_HEIGHT = 1024; // Height of the shadow map
+
+
 const int MAX_TREES = 50;
 const int TREE_SPACING = 4;
 const int TERRAIN_FLOOR = 0.0f;
@@ -46,11 +50,6 @@ bool isOrthograph = false;
 bool firstMouse = true;
 float lastX = (float) SCREEN_WIDTH / 2.0;
 float lastY = (float) SCREEN_HEIGHT / 2.0;
-
-float ambientK = 0.1f;
-float diffuseK = 1.0f;
-float specularK = 1.0f;
-float shininess = 32.0f;
 
 const int GRASS_OBJECT_NUM = 90000;
 glm::vec3 windDir(2.0f, 0.0f, 0.0f);
@@ -418,6 +417,14 @@ int main() {
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(5 * sizeof(float)));
 	glEnableVertexAttribArray(2);
 
+	// Grab the textures
+	Texture2D texture0("assets/Brown.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
+
+	texture0.Bind(GL_TEXTURE0);
+
+	// Set the textures to ints
+	lightingShader.setInt("texture0", 0);
+
 	//Grass VAO and VBO | Brandon Cherry
 	unsigned int grassVAO, grassVBO;
 	glGenVertexArrays(1, &grassVAO);
@@ -475,6 +482,9 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
+	//Shaders FBO | Steven Bruns
+	//Cancelled due to lack of time, and it was super complicated
+
 	// This will be for tree attributes | Nick.M
 	
 	unsigned int treeVAO, treeVBO, TreeEBO;
@@ -503,28 +513,13 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	// Grab the textures
-	Texture2D texture0("assets/Wood.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGBA);
-
-	texture0.Bind(GL_TEXTURE0);
-
 	//Grass Texture and shader | Brandon Cherry
 	Texture2D grassTexture("assets/GrassTexture.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE , GL_RGBA);
 	grassTexture.Bind(GL_TEXTURE1);
 	grassShader.use();
-	grassShader.setInt("grassTexture", 0);
-	
-	
-	
+	grassShader.setInt("grassTexture", 0);	
 
 	//Sky Sphere Texture | Steven Bruns from when I wanted to use a texture
-	//Texture2D skyTexture("assets/Skybox_Wall.jpg", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_REPEAT, GL_REPEAT, GL_RGB);
-	//skyTexture.Bind(GL_TEXTURE2);
-	//skysphereShader.use();
-	//skysphereShader.setInt("skyboxTexture", 2);
-
-	// Set the textures to ints
-	lightingShader.setInt("texture0", 0);
 
 	float rotateTime = 0;
 
@@ -540,7 +535,7 @@ int main() {
 	int shininessLoc = glGetUniformLocation(lightingShader.ID, "shininess");
 	int lightColorLoc = glGetUniformLocation(lightingShader.ID, "lightColor");
 
-	float ambientK = 0.1f;
+	float ambientK = 0.5f;
 	float diffuseK = 1.0f;
 	float specularK = 0.5f;
 	float shininess = 256.0f;
@@ -558,9 +553,11 @@ int main() {
 
 		// Set Time
 		float time = (float)glfwGetTime();
-
 		float currentTime = glfwGetTime();
-		skysphereShader.setFloat("_Time", currentTime);
+		//skysphereShader.setFloat("_Time", currentTime);
+		float adjustedTime = time * sunSpeed;
+		skysphereShader.setFloat("_Time", adjustedTime);
+		glm::vec3 sunDir = glm::normalize(glm::vec3(0.0f, sin(adjustedTime), cos(adjustedTime)));
 
 		skysphereShader.use();
 
@@ -568,23 +565,30 @@ int main() {
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		glClear(GL_DEPTH_BUFFER_BIT);					 // Clear
+
 		glUniform1f(timeLoc, time);
 		glUniform1f(ambientLoc, ambientK);
 		glUniform1f(diffLoc, diffuseK);
 		glUniform1f(specularLoc, specularK);
 		glUniform1f(shininessLoc, shininess);
 
+		glUniform3fv(glGetUniformLocation(skysphereShader.ID, "sunDir"), 1, glm::value_ptr(sunDir));
+		glUniform3fv(glGetUniformLocation(lightingShader.ID, "sunDir"), 1, glm::value_ptr(sunDir));
+		//glUniform3fv(glGetUniformLocation(lightCubeShader.ID, "sunDir"), 1, glm::value_ptr(sunDir));
+
+		glm::vec3 lightDir = glm::vec3(cos(time), -0.5f, sin(time)); // Simulate sun movement
 		lightingShader.use();
-		//glBindTexture(GL_TEXTURE_2D, texture0.getID()); 
+		lightingShader.setVec3("lightDir", lightDir);
+
+		lightingShader.use();
 		lightingShader.setVec3("lightPos", lightPos);
 		lightingShader.setVec3("lightColor", lightColor);
 		lightingShader.setVec3("viewPos", cam.Position);
-
 		lightingShader.setFloat("ambientK", ambientK);
 		lightingShader.setFloat("diffuseK", diffuseK);
 		lightingShader.setFloat("specularK", specularK);
 		lightingShader.setFloat("shininess", shininess);
-
 
 		glUniform1f(timeLoc, time);
 
@@ -599,7 +603,7 @@ int main() {
 
 		skysphereShader.use();
 		skysphereShader.setMat4("_ViewProjection", projection * view);
-		skysphereShader.setFloat("_Time", glfwGetTime());
+		skysphereShader.setFloat("_Time", time);
 		skysphereShader.setVec3("sunCol", glm::vec3(1.0f, 0.8f, 0.5f));
 		glm::mat4 sphereModel = glm::scale(glm::mat4(1.0f), glm::vec3(1000.0f));
 		skysphereShader.setMat4("_Model", sphereModel);
@@ -621,8 +625,6 @@ int main() {
 		lightingShader.use();
 		lightingShader.setMat4("projection", projection);
 		lightingShader.setMat4("view", view);
-
-		lightingShader.use();
 
 		glBindVertexArray(VAO);
 
@@ -683,23 +685,6 @@ int main() {
 		glDrawArraysInstanced(GL_TRIANGLES, 0, 18, GRASS_OBJECT_NUM);
 		
 		glBindVertexArray(VAO);
-		// also draw the lamp object
-		lightCubeShader.use();
-		lightCubeShader.setMat4("projection", projection);
-		lightCubeShader.setFloat("uTime", time);
-		lightCubeShader.setMat4("view", view);
-
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.8f)); // a smaller cube
-
-
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, lightPos);
-		lightCubeShader.setMat4("model", model);
-		lightCubeShader.setVec3("lightColor", lightColor);
-
-		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glBindVertexArray(0);
 
@@ -710,7 +695,6 @@ int main() {
 		ImGui::NewFrame();
 
 		// Create a window called Settings.
-		//ImGui::Text("Add Controls Here!");
 		ImGui::Begin("Settings");
 		ImGui::Text("Controls");
 		ImGui::DragFloat3("Light Position", &lightPos.x, 0.1f);

@@ -10,6 +10,7 @@ in vec2 UV;
 
 uniform float _Time;
 uniform float sunSpeed;  // Set the Speed of the sun
+uniform vec3 sunDir; // Uniform for sun direction
 
 void main(){
     // Set the colors for the sky during the day and night
@@ -25,13 +26,12 @@ void main(){
     // Mix the colors based on sun's height
     vec3 col = mix(twilightCol, sunsetCol, (sunHeight + 1.0) * 0.5); 
 
-    // Simulate the sun's color and intensity
-    vec3 sunDir = vec3(0.0, sin(adjustedTime), cos(adjustedTime)); 
-    sunDir = normalize(sunDir);
-
-    // Dot product for the intensity of sunlight based on surface normal
+    // Simulate Direction
+    vec3 sunLightDir = normalize(sunDir); // Sun direction from uniform
     vec3 normal = normalize(Pos);
-    float sunIntensity = max(dot(sunDir, normal), 0.0);
+
+    // Simulate the sun's color and intensity
+    float sunIntensity = max(dot(sunLightDir, normal), 0.0);
     sunIntensity = pow(sunIntensity, 128.0); // Sharp intensity effect
 
     // Sun color (orange/yellow)
