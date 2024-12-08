@@ -253,51 +253,41 @@ int main() {
 		treeVertex(glm::vec3& pos, glm::vec3& normal, glm::vec2& uv) : pos(pos), normal(normal), uv(uv) {}
 	};
 
+	// may need to use or not
+	struct TreeTopMesh {};
+
 	std::vector<treeVertex> treeVertices;
 	std::vector<unsigned int> treeIndices;
 
-	// for the indicies
-	// Placeholder number for now, replace with subdivisions later
-	// may also need columns later
+	// variables for verts and Inds.
+	int SubDivisions = 20; 
+	float cRad = 2.0f;	 
+	float thetaParts = 2 * PI / SubDivisions;
+	float phiParts = PI / SubDivisions;
 
-	int SubDivisions = 8; // this will be subDivisions later
-
-	for (int r = 0; r < SubDivisions; r++)
-	{
-		unsigned int bottomLeft = r * SubDivisions;
-		unsigned int bottomRight = bottomLeft + 1;
-		unsigned int topLeft = bottomLeft + SubDivisions + 1;
-		unsigned int topRight = topLeft + 1;
-
-		treeIndices.push_back(bottomLeft);
-		treeIndices.push_back(bottomRight);
-		treeIndices.push_back(topLeft);
-		treeIndices.push_back(topRight);
-		// set this later as (bL, bR, tR)  (tR, tL, bL)
-	}
-
-	// Numbers jst in case I need them 
-	float cRad = 5.0f; 
-	float theta = 2 * 3.141 / SubDivisions;
-	float phi = 3.141 / SubDivisions;
-	int numSegments = 4;
-
-	
+	// for the vertices
 	for (int row = 0; row <= SubDivisions; row++)
 	{
-		for (int j = 0; j < numSegments; j++) 
+		float phi = row * phiParts;
+		for (int col = 0; col <= SubDivisions; col++) 
 		{
-			glm::vec3 pos;
-			pos.x = (cRad * cosf(theta * row)) / numSegments;
-			pos.y = cRad * (float)row / SubDivisions;
-			pos.z = (cRad * sinf(theta * row)) / numSegments;
+			float theta = col * thetaParts;
 
-			glm::vec3 normal = glm::normalize(pos);
-
+			// uv part
 			glm::vec2 uv;
-			uv.x = 1.0 - (1 / SubDivisions);
+			uv.x = 1.0 - ((float)col / SubDivisions);
 			uv.y = 1.0 - ((float)row / SubDivisions);
 
+			// position part
+			glm::vec3 pos;
+			pos.x = cRad * cosf(theta) * sinf(phi);
+			pos.y = cRad * cosf(phi);
+			pos.z = cRad * sinf(theta) * sinf(phi);
+
+			// normal part
+			glm::vec3 normal = glm::normalize(pos);
+
+			// psuh back each of these
 			treeVertex tV;
 			tV.pos = pos;
 			tV.normal = normal;
@@ -305,6 +295,28 @@ int main() {
 
 			treeVertices.push_back(tV);
 		}
+	}
+
+	// for the indicies
+	for (int r = 0; r < SubDivisions; r++)
+	{
+		for (int c = 0; c < SubDivisions; c++)
+		{
+			unsigned int bottomLeft = r * (SubDivisions + 1) + c;
+			unsigned int bottomRight = bottomLeft + 1;
+			unsigned int topLeft = bottomLeft + SubDivisions + 1;
+			unsigned int topRight = topLeft + 1;
+
+			treeIndices.push_back(bottomLeft);
+			treeIndices.push_back(bottomRight);
+			treeIndices.push_back(topRight);
+
+			treeIndices.push_back(topRight);
+			treeIndices.push_back(topLeft);
+			treeIndices.push_back(bottomLeft);
+			// set this later as (bL, bR, tR)  (tR, tL, bL)
+		}
+
 	}
 
 	// For the base Terrain | Nick.M
@@ -362,7 +374,7 @@ int main() {
 	for (int i = 0; i < MAX_TREES; i++)
 	{
 		treeTopPos[i].x = treesPos[i].x;
-		treeTopPos[i].y = treesPos[i].y + treesScale[i].y;
+		treeTopPos[i].y = treesPos[i].y;
 		treeTopPos[i].z = treesPos[i].z;
 	}
 
@@ -383,9 +395,9 @@ int main() {
 	glm::vec3 treeTopScale[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++)
 	{
-		treeTopScale[i].x = 2.0f;
+		treeTopScale[i].x = 1.0f;
 		treeTopScale[i].y = ew::RandomRange(1.0f, 20.0f);
-		treeTopScale[i].z = 2.0f;
+		treeTopScale[i].z = 1.0f;
 	}
 	
 	//Geometry for the Sky Sphere
@@ -486,32 +498,37 @@ int main() {
 	//Cancelled due to lack of time, and it was super complicated
 
 	// This will be for tree attributes | Nick.M
-	
 	unsigned int treeVAO, treeVBO, TreeEBO;
-	glGenVertexArrays(1, &treeVAO);
-	glGenBuffers(1, &treeVBO);
-	glGenBuffers(1, &TreeEBO);
 
+	// The VAO
+	glGenVertexArrays(1, &treeVAO);
 	glBindVertexArray(treeVAO);
 
+	// Next VBO
+	glGenBuffers(1, &treeVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, treeVBO);
-	glBufferData(GL_ARRAY_BUFFER, treeVertices.size() * sizeof(float), &treeVertices[0], GL_STATIC_DRAW);
 
+	// Next EBO
+	glGenBuffers(1, &TreeEBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, TreeEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, treeIndices.size() * sizeof(unsigned int), &treeIndices[0], GL_STATIC_DRAW);
 
-	// Setup vertex attributes
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(treeVertex), (void*)0); // Position
+	// vertex attributes
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(treeVertex), (void*)offsetof(treeVertex, pos)); // Position
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(treeVertex), (void*)(3 * sizeof(float))); // UVs
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(treeVertex), (void*)offsetof(treeVertex, normal)); // Normals
 	glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(treeVertex), (void*)(6 * sizeof(float))); // UVs
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(treeVertex), (void*)offsetof(treeVertex, uv)); // UVs
 	glEnableVertexAttribArray(2);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	// this part is most likely the one causing issues, that or the way I setup the call function.
+	glBufferData(GL_ARRAY_BUFFER, treeVertices.size() * sizeof(treeVertex), &treeVertices[0], GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, treeIndices.size() * sizeof(unsigned int), &treeIndices[0], GL_STATIC_DRAW);
+
 	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	//Grass Texture and shader | Brandon Cherry
 	Texture2D grassTexture("assets/GrassTexture.png", GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE , GL_RGBA);
@@ -628,6 +645,7 @@ int main() {
 
 		glBindVertexArray(VAO);
 
+		
 		for (unsigned int i = 0; i < 21; i++)
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
@@ -640,7 +658,6 @@ int main() {
 
 			glBindVertexArray(VAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
-
 		}
 		
 		// this part is to draw the objects on the terrain | Nick.M
@@ -648,7 +665,8 @@ int main() {
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
 			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::scale(model, treesScale[i]);
+			
+			model = glm::scale(model, treesScale[i]); 
 			model = glm::translate(model, treesPos[i]);
 			lightingShader.setMat4("model", model);
 
@@ -656,17 +674,25 @@ int main() {
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		}
+		
 
 		// for the tree tops to appear | Nick.M
-		for (int i = 0; i < MAX_TREES; i++) 
+		for (unsigned int i = 0; i < MAX_TREES; i++) 
 		{
 			glm::mat4 treeModel = glm::mat4(1.0f);
-			treeModel = glm::scale(treeModel, treeTopScale[i]);
-			treeModel = glm::translate(treeModel, treeTopPos[i]);
+			
+			treeModel = glm::scale(treeModel, treesScale[i]); // treeTopScale for later
+			treeModel = glm::translate(treeModel, treesPos[i]); // treeTopPos for later
 			lightingShader.setMat4("model", treeModel);
 
 			glBindVertexArray(treeVAO);
-			glDrawArrays(GL_TRIANGLES, 0, 36);
+
+			int vertsAmount = treeIndices.size();
+			int indsAmount = treeVertices.size();
+
+			// it has to be one of these two, I have no idea which one though.
+			glDrawElements(GL_TRIANGLES, indsAmount, GL_UNSIGNED_INT, NULL);
+			// glDrawArrays(GL_TRIANGLES, 0, vertsAmount);
 		}
 		
 
