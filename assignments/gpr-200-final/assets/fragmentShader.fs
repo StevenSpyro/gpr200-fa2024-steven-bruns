@@ -1,4 +1,3 @@
-// Fragment Shader Code
 #version 330 core
 out vec4 FragColor;
 
@@ -7,40 +6,35 @@ in vec3 Normal;
 in vec2 TexCoords; 
 
 uniform sampler2D texture0;
-uniform vec3 lightColor; // Light color from sun
-uniform vec3 sunDir;     // Sun direction passed from skysphere shader
-uniform vec3 viewPos;
-uniform vec3 lightPos;
+uniform vec3 lightColor;  // Light color 
+uniform vec3 viewPos;     // Camera position 
+uniform vec3 sunDir;      // Sun direction 
 
-uniform float ambientK;     
-uniform float diffuseK;     
-uniform float specularK;    
-uniform float shininess;    
+uniform float ambientK;   // Ambient 
+uniform float diffuseK;   // Diffuse 
+uniform float specularK;  // Specular 
+uniform float shininess;  // Shininess 
 
-void main() {
-    // Ambient
-    vec3 ambient = lightColor * ambientK;
+void main()
+{
+    // Ambient Lighting 
+    vec3 ambient = ambientK * lightColor;
 
-    // Diffuse
-    vec3 norm = normalize(Normal);
-    vec3 lightDir = normalize(sunDir); // Use sunDir instead of recalculating
-    //float diff = max(dot(norm, lightDir), 0.0);
-    float diff = max(dot(normalize(norm), normalize(-sunDir)), 0.0);
-    vec3 diffuse = diffuseK * diff * lightColor;
+    // Diffuse Lighting 
+    vec3 norm = normalize(Normal); // Normalize 
+    float diff = max(dot(norm, sunDir), 0.0); 
+    vec3 diffuse = diffuseK * diff * lightColor; // Diffuse lighting
 
-    // Specular
-    vec3 viewDir = normalize(viewPos - FragPos);
-    //vec3 reflectDir = reflect(-lightDir, norm);
-    //float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-    //vec3 specular = specularK * spec * lightColor;
-    vec3 reflectDir = reflect(-lightDir, normalize(norm));
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-    vec3 specular = spec * lightColor * specularK;
+    // Specular Lighting 
+    vec3 viewDir = normalize(viewPos - FragPos); 
+    vec3 reflectDir = reflect(sunDir, norm); 
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess); 
+    vec3 specular = specularK * spec * lightColor; // Specular lighting
 
-    // Texture
+    // Texture color from the texture map
     vec3 textureColor = texture(texture0, TexCoords).rgb;
 
-    // Combine results
+    // Combine results (ambient + diffuse + specular) and apply texture color
     vec3 result = (ambient + diffuse + specular) * textureColor;
-    FragColor = vec4(result, 1.0);
+    FragColor = vec4(result, 1.0); // Final color with combined lighting and texture
 }

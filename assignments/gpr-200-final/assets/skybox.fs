@@ -27,6 +27,7 @@ void main(){
     vec3 col = mix(twilightCol, sunsetCol, (sunHeight + 1.0) * 0.5); 
 
     // Simulate Direction
+    //vec3 sunDir = normalize(vec3(sin(_Time), sunHeight, cos(_Time)));
     vec3 sunLightDir = normalize(sunDir); // Sun direction from uniform
     vec3 normal = normalize(Pos);
 
@@ -39,6 +40,8 @@ void main(){
 
     // Add the sun color on top of the sky
     col += sunCol;
+
+    col = clamp(col, 0.0, 1.0);
 
     // Final output
     FragColor = vec4(col, 1.0);

@@ -570,13 +570,16 @@ int main() {
 
 		// Set Time
 		float time = (float)glfwGetTime();
-		float currentTime = glfwGetTime();
-		//skysphereShader.setFloat("_Time", currentTime);
 		float adjustedTime = time * sunSpeed;
-		skysphereShader.setFloat("_Time", adjustedTime);
-		glm::vec3 sunDir = glm::normalize(glm::vec3(0.0f, sin(adjustedTime), cos(adjustedTime)));
+		//skysphereShader.setFloat("_Time", adjustedTime);
+		glm::vec3 sunDir = glm::normalize(glm::vec3(cos(adjustedTime), sin(adjustedTime), 0.0f));
+
+		lightingShader.use();
+		lightingShader.setVec3("sunDir", sunDir);
 
 		skysphereShader.use();
+		skysphereShader.setVec3("sunDir", sunDir);
+
 
 		// Clear framebuffer
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -590,15 +593,11 @@ int main() {
 		glUniform1f(specularLoc, specularK);
 		glUniform1f(shininessLoc, shininess);
 
-		glUniform3fv(glGetUniformLocation(skysphereShader.ID, "sunDir"), 1, glm::value_ptr(sunDir));
-		glUniform3fv(glGetUniformLocation(lightingShader.ID, "sunDir"), 1, glm::value_ptr(sunDir));
-		//glUniform3fv(glGetUniformLocation(lightCubeShader.ID, "sunDir"), 1, glm::value_ptr(sunDir));
-
 		glm::vec3 lightDir = glm::vec3(cos(time), -0.5f, sin(time)); // Simulate sun movement
 		lightingShader.use();
 		lightingShader.setVec3("lightDir", lightDir);
 
-		lightingShader.use();
+		//lightingShader.use();
 		lightingShader.setVec3("lightPos", lightPos);
 		lightingShader.setVec3("lightColor", lightColor);
 		lightingShader.setVec3("viewPos", cam.Position);
@@ -723,8 +722,8 @@ int main() {
 		// Create a window called Settings.
 		ImGui::Begin("Settings");
 		ImGui::Text("Controls");
-		ImGui::DragFloat3("Light Position", &lightPos.x, 0.1f);
-		ImGui::ColorEdit3("Light Color", &lightColor.r);
+		//ImGui::DragFloat3("Light Position", &lightPos.x, 0.1f);
+		ImGui::ColorEdit3("World Color", &lightColor.r);
 		ImGui::SliderFloat("Ambient K", &ambientK, 0.0f, 1.0f);
 		ImGui::SliderFloat("Diffuse K", &diffuseK, 0.0f, 1.0f);
 		ImGui::SliderFloat("Specular K", &specularK, 0.0f, 1.0f);
