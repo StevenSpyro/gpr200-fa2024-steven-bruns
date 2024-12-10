@@ -256,8 +256,8 @@ int main() {
 	std::vector<unsigned int> treeIndices;
 
 	// variables for verts and Inds.
-	int SubDivisions = 20; 
-	float cRad = 2.0f;	 
+	int SubDivisions = 8; 
+	float cRad = 3.0f;	 
 	float thetaParts = 2 * PI / SubDivisions;
 	float phiParts = PI / SubDivisions;
 
@@ -337,12 +337,6 @@ int main() {
 	// This is for the tree base.
 	float treeSpacing = terrainScale.x / MAX_TREES;
 
-	float treesAngle[MAX_TREES];
-	for (int i = 0; i < MAX_TREES; i++)
-	{
-		treesAngle[i] = 0.0f;
-	}
-
 	glm::vec3 treesRotate[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++)
 	{
@@ -368,6 +362,14 @@ int main() {
 	}
 
 	// This is for the tree tops 
+	glm::vec3 treeTopScale[MAX_TREES];
+	for (int i = 0; i < MAX_TREES; i++)
+	{
+		treeTopScale[i].x = 1.0f;
+		treeTopScale[i].y = 1.0f;
+		treeTopScale[i].z = 1.0f;
+	}
+
 	glm::vec3 treeTopPos[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++)
 	{
@@ -376,26 +378,12 @@ int main() {
 		treeTopPos[i].z = treesPos[i].z;
 	}
 
-	float treeTopAngle[MAX_TREES];
-	for (int i = 0; i < MAX_TREES; i++)
-	{
-		treeTopAngle[i] = 0.0f;
-	}
-
 	glm::vec3 treeTopRotate[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++)
 	{
-		treeTopRotate[i].x = 45.0f;
-		treeTopRotate[i].y = 0.0f;
-		treeTopRotate[i].z = 0.0f;
-	}
-
-	glm::vec3 treeTopScale[MAX_TREES];
-	for (int i = 0; i < MAX_TREES; i++)
-	{
-		treeTopScale[i].x = 1.0f;
-		treeTopScale[i].y = 1.0f;
-		treeTopScale[i].z = 1.0f;
+		treeTopRotate[i].x = 100.0f;
+		treeTopRotate[i].y = 90.0f;
+		treeTopRotate[i].z = 90.0f;
 	}
 	// end of transformation section, add more if we need to.
 
@@ -680,7 +668,7 @@ int main() {
 			glm::mat4 treeModel = glm::mat4(1.0f);
 			
 			treeModel = glm::translate(treeModel, treeTopPos[i]);
-			// skipping rotation, not needed otherwise here
+			// treeModel = glm::rotate(treeModel, glm::radians(180.0f), treeTopRotate[i]); // skipping rotation, not needed otherwise here
 			treeModel = glm::scale(treeModel, treeTopScale[i]);
 			lightingShader.setMat4("model", treeModel);
 
