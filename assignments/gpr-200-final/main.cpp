@@ -32,10 +32,8 @@ const int SCREEN_HEIGHT = 600;
 const unsigned int SHADOW_WIDTH = 1024;  // Width of the shadow map
 const unsigned int SHADOW_HEIGHT = 1024; // Height of the shadow map
 
-
-const int MAX_TREES = 50;
-const int TREE_SPACING = 4;
 const int TERRAIN_FLOOR = 0.0f;
+const int MAX_TREES = 50;
 
 Camera cam(glm::vec3(0.0f, 0.0f, 3.0f));
 
@@ -240,8 +238,9 @@ int main() {
 		1, 2, 3    // second triangle
 	};
 
+
 	// Area used to make the tree |Nick.M
-	// also made with the help of Eric WineBrenner's example
+	// Procedural geometry made with the help of Eric Winebrenner's example.
 	struct treeVertex
 	{
 		glm::vec3 pos = glm::vec3(0);
@@ -252,9 +251,6 @@ int main() {
 
 		treeVertex(glm::vec3& pos, glm::vec3& normal, glm::vec2& uv) : pos(pos), normal(normal), uv(uv) {}
 	};
-
-	// may need to use or not
-	struct TreeTopMesh {};
 
 	std::vector<treeVertex> treeVertices;
 	std::vector<unsigned int> treeIndices;
@@ -314,12 +310,12 @@ int main() {
 			treeIndices.push_back(topRight);
 			treeIndices.push_back(topLeft);
 			treeIndices.push_back(bottomLeft);
-			// set this later as (bL, bR, tR)  (tR, tL, bL)
 		}
 
 	}
 
-	// For the base Terrain | Nick.M
+	// This section will be for transfromations | Nick.M
+	// This is for the base Terrain 
 	glm::vec3 terrainPos;
 	terrainPos.x = 0.0f;
 	terrainPos.y = -1.0f;
@@ -338,14 +334,8 @@ int main() {
 	terrainScale.y = 1.0f;
 	terrainScale.z = 200.0f;
 
-	// For the objects on the terrain (starting with trees) | Nick.M
-	glm::vec3 treesPos[MAX_TREES];
-	for (int i = 0; i < MAX_TREES; i++) 
-	{
-		treesPos[i].x = (MAX_TREES * TREE_SPACING) - (TREE_SPACING*2*i);
-		treesPos[i].y = TERRAIN_FLOOR;
-		treesPos[i].z = ew::RandomRange(-100.0, -1.0f);
-	}
+	// This is for the tree base.
+	float treeSpacing = terrainScale.x / MAX_TREES;
 
 	float treesAngle[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++)
@@ -365,16 +355,24 @@ int main() {
 	for (int i = 0; i < MAX_TREES; i++)
 	{
 		treesScale[i].x = 0.5f;
-		treesScale[i].y = ew::RandomRange(2.5f, 10.0f);
+		treesScale[i].y = ew::RandomRange(5.0f, 15.0f);
 		treesScale[i].z = 0.5f;
 	}
 
-	// For the objects on the terrain (starting with treetops) | Nick.M
+	glm::vec3 treesPos[MAX_TREES];
+	for (int i = 0; i < MAX_TREES; i++) 
+	{
+		treesPos[i].x = 100.0f - (treeSpacing * i);  
+		treesPos[i].y = TERRAIN_FLOOR + (treesScale[i].y / 2);
+		treesPos[i].z = ew::RandomRange(-100.0, -1.0f);
+	}
+
+	// This is for the tree tops 
 	glm::vec3 treeTopPos[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++)
 	{
 		treeTopPos[i].x = treesPos[i].x;
-		treeTopPos[i].y = treesPos[i].y;
+		treeTopPos[i].y = treesScale[i].y;
 		treeTopPos[i].z = treesPos[i].z;
 	}
 
@@ -396,10 +394,11 @@ int main() {
 	for (int i = 0; i < MAX_TREES; i++)
 	{
 		treeTopScale[i].x = 1.0f;
-		treeTopScale[i].y = ew::RandomRange(1.0f, 20.0f);
+		treeTopScale[i].y = 1.0f;
 		treeTopScale[i].z = 1.0f;
 	}
-	
+	// end of transformation section, add more if we need to.
+
 	//Geometry for the Sky Sphere
 	const int X_SEGMENTS = 64;
 	const int Y_SEGMENTS = 64;
@@ -522,7 +521,7 @@ int main() {
 	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(treeVertex), (void*)offsetof(treeVertex, uv)); // UVs
 	glEnableVertexAttribArray(2);
 
-	// this part is most likely the one causing issues, that or the way I setup the call function.
+	// Buffer binding part
 	glBufferData(GL_ARRAY_BUFFER, treeVertices.size() * sizeof(treeVertex), &treeVertices[0], GL_STATIC_DRAW);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, treeIndices.size() * sizeof(unsigned int), &treeIndices[0], GL_STATIC_DRAW);
 
@@ -644,7 +643,8 @@ int main() {
 
 		glBindVertexArray(VAO);
 
-		
+		// This is for the terrain | Nick.M
+		// Credit to Steven for the original code, thank you.
 		for (unsigned int i = 0; i < 21; i++)
 		{
 			// calculate the model matrix for each object and pass it to shader before drawing
@@ -662,16 +662,15 @@ int main() {
 		// this part is to draw the objects on the terrain | Nick.M
 		for (unsigned int i = 0; i < MAX_TREES; i++)
 		{
-			// calculate the model matrix for each object and pass it to shader before drawing
 			glm::mat4 model = glm::mat4(1.0f);
 			
-			model = glm::scale(model, treesScale[i]); 
 			model = glm::translate(model, treesPos[i]);
+			// skipping rotation, not needed otherwise here
+			model = glm::scale(model, treesScale[i]); 
 			lightingShader.setMat4("model", model);
 
 			glBindVertexArray(VAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
-
 		}
 		
 
@@ -680,18 +679,17 @@ int main() {
 		{
 			glm::mat4 treeModel = glm::mat4(1.0f);
 			
-			treeModel = glm::scale(treeModel, treesScale[i]); // treeTopScale for later
-			treeModel = glm::translate(treeModel, treesPos[i]); // treeTopPos for later
+			treeModel = glm::translate(treeModel, treeTopPos[i]);
+			// skipping rotation, not needed otherwise here
+			treeModel = glm::scale(treeModel, treeTopScale[i]);
 			lightingShader.setMat4("model", treeModel);
 
+			int vertsAmount = treeVertices.size();
+			int indsAmount = treeIndices.size();
+
 			glBindVertexArray(treeVAO);
-
-			int vertsAmount = treeIndices.size();
-			int indsAmount = treeVertices.size();
-
-			// it has to be one of these two, I have no idea which one though.
 			glDrawElements(GL_TRIANGLES, indsAmount, GL_UNSIGNED_INT, NULL);
-			// glDrawArrays(GL_TRIANGLES, 0, vertsAmount);
+			// glDrawArrays(GL_TRIANGLES, 0, vertsAmount); // dont use this
 		}
 		
 
