@@ -48,7 +48,7 @@ bool firstMouse = true;
 float lastX = (float) SCREEN_WIDTH / 2.0;
 float lastY = (float) SCREEN_HEIGHT / 2.0;
 
-const int GRASS_OBJECT_NUM = 90000;
+const int GRASS_OBJECT_NUM = 422500;
 glm::vec3 windDir(2.0f, 0.0f, 0.0f);
 float windSpeed = 1.0f;
 
@@ -136,10 +136,10 @@ int main() {
 	//Instancing Setup | Brandon Cherry
 	glm::vec2* translations = new glm::vec2[GRASS_OBJECT_NUM]; //Allocated on the Heap
 	int index = 0;
-	float offset = 0.5f;
-	for (int y = -300; y < 300; y += 2)
+	float offset = 0.7f;
+	for (int y = -650; y < 650; y += 2)
 	{
-		for (int x = -300; x < 300; x += 2)
+		for (int x = -650; x < 650; x += 2)
 		{
 			glm::vec2 translation;
 			translation.x = (float)x / 7.0f + offset;
@@ -703,7 +703,7 @@ int main() {
 		ImGui::SliderFloat("Sun Speed", &sunSpeed, 0.01f, 1.0f);
 
 		ImGui::DragFloat3("Wind Direction", &windDir.x, 0.1f);
-		ImGui::SliderFloat("Wind Speed", &windSpeed, 0.0f, 2.5f);
+		ImGui::SliderFloat("Wind Speed", &windSpeed, 0.0f, 7.0f);
 
 		ImGui::End();
 
