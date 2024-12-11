@@ -32,7 +32,6 @@ const int SCREEN_HEIGHT = 600;
 const unsigned int SHADOW_WIDTH = 1024;  // Width of the shadow map
 const unsigned int SHADOW_HEIGHT = 1024; // Height of the shadow map
 
-const int TERRAIN_FLOOR = 0.0f;
 const int MAX_TREES = 50;
 
 Camera cam(glm::vec3(0.0f, 0.0f, 3.0f));
@@ -149,11 +148,6 @@ int main() {
 		}
 	}
 
-
-	float treeVerts[] = {
-		1.0f
-	};
-
 	float vertices[] = {
 		//  X      Y      Z      U     V     NX     NY     NZ
 		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,  0.0f,  0.0f, -1.0f,
@@ -239,6 +233,7 @@ int main() {
 	};
 
 
+#pragma region TreeAndTerrain
 	// Area used to make the tree |Nick.M
 	// Procedural geometry made with the help of Eric Winebrenner's example.
 	struct treeVertex
@@ -314,15 +309,12 @@ int main() {
 
 	}
 
-	// This section will be for transfromations | Nick.M
-	// This is for the base Terrain 
+	// This part handles transformations | Nick.M
+	// Each for Position, Roataion, and Scaling.
 	glm::vec3 terrainPos;
 	terrainPos.x = 0.0f;
 	terrainPos.y = -1.0f;
 	terrainPos.z = 0.0f;
-
-	float terrainAngle;
-	terrainAngle = 0.0f;
 
 	glm::vec3 terrainRotate;
 	terrainRotate.x = 0;
@@ -336,8 +328,10 @@ int main() {
 
 	// This is for the tree base.
 	float treeSpacing = terrainScale.x / MAX_TREES;
-
 	glm::vec3 treesRotate[MAX_TREES];
+	glm::vec3 treesScale[MAX_TREES];
+	glm::vec3 treesPos[MAX_TREES];
+
 	for (int i = 0; i < MAX_TREES; i++)
 	{
 		treesRotate[i].x = 45.0f;
@@ -345,47 +339,46 @@ int main() {
 		treesRotate[i].z = 0.0f;
 	}
 
-	glm::vec3 treesScale[MAX_TREES];
 	for (int i = 0; i < MAX_TREES; i++)
 	{
 		treesScale[i].x = 0.5f;
 		treesScale[i].y = ew::RandomRange(5.0f, 15.0f);
 		treesScale[i].z = 0.5f;
 	}
-
-	glm::vec3 treesPos[MAX_TREES];
+	
 	for (int i = 0; i < MAX_TREES; i++) 
 	{
 		treesPos[i].x = 100.0f - (treeSpacing * i);  
-		treesPos[i].y = TERRAIN_FLOOR + (treesScale[i].y / 2);
+		treesPos[i].y = (treesScale[i].y / 2);
 		treesPos[i].z = ew::RandomRange(-100.0, -1.0f);
 	}
 
 	// This is for the tree tops 
 	glm::vec3 treeTopScale[MAX_TREES];
+	glm::vec3 treeTopPos[MAX_TREES];
+	glm::vec3 treeTopRotate[MAX_TREES];
+
 	for (int i = 0; i < MAX_TREES; i++)
 	{
 		treeTopScale[i].x = 1.0f;
 		treeTopScale[i].y = 1.0f;
 		treeTopScale[i].z = 1.0f;
 	}
-
-	glm::vec3 treeTopPos[MAX_TREES];
+	
 	for (int i = 0; i < MAX_TREES; i++)
 	{
 		treeTopPos[i].x = treesPos[i].x;
 		treeTopPos[i].y = treesScale[i].y;
 		treeTopPos[i].z = treesPos[i].z;
 	}
-
-	glm::vec3 treeTopRotate[MAX_TREES];
+	
 	for (int i = 0; i < MAX_TREES; i++)
 	{
 		treeTopRotate[i].x = 100.0f;
 		treeTopRotate[i].y = 90.0f;
 		treeTopRotate[i].z = 90.0f;
 	}
-	// end of transformation section, add more if we need to.
+#pragma endregion TreeAndTerrain
 
 	//Geometry for the Sky Sphere
 	const int X_SEGMENTS = 64;
@@ -503,10 +496,10 @@ int main() {
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(treeVertex), (void*)offsetof(treeVertex, pos)); // Position
 	glEnableVertexAttribArray(0);
 
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(treeVertex), (void*)offsetof(treeVertex, normal)); // Normals
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(treeVertex), (void*)offsetof(treeVertex, uv)); // UVs
 	glEnableVertexAttribArray(1);
 
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(treeVertex), (void*)offsetof(treeVertex, uv)); // UVs
+	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(treeVertex), (void*)offsetof(treeVertex, normal)); // Normals
 	glEnableVertexAttribArray(2);
 
 	// Buffer binding part
@@ -631,29 +624,24 @@ int main() {
 
 		glBindVertexArray(VAO);
 
-		// This is for the terrain | Nick.M
+		// Drawing the terrain | Nick.M
 		// Credit to Steven for the original code, thank you.
-		for (unsigned int i = 0; i < 21; i++)
 		{
-			// calculate the model matrix for each object and pass it to shader before drawing
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::scale(model, terrainScale);
 			model = glm::translate(model, terrainPos);
-			//float angle = 20.0f * i;
-			//model = glm::rotate(model, rotateTime * glm::radians(rotateterrainAngle[i]), terrainRotate[i]);
 			lightingShader.setMat4("model", model);
 
 			glBindVertexArray(VAO);
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
-		
-		// this part is to draw the objects on the terrain | Nick.M
+
+		// Draw tree trunks | Nick.M
 		for (unsigned int i = 0; i < MAX_TREES; i++)
 		{
 			glm::mat4 model = glm::mat4(1.0f);
 			
 			model = glm::translate(model, treesPos[i]);
-			// skipping rotation, not needed otherwise here
 			model = glm::scale(model, treesScale[i]); 
 			lightingShader.setMat4("model", model);
 
@@ -662,13 +650,12 @@ int main() {
 		}
 		
 
-		// for the tree tops to appear | Nick.M
+		// Draw tree tops | Nick.M
 		for (unsigned int i = 0; i < MAX_TREES; i++) 
 		{
 			glm::mat4 treeModel = glm::mat4(1.0f);
 			
 			treeModel = glm::translate(treeModel, treeTopPos[i]);
-			// treeModel = glm::rotate(treeModel, glm::radians(180.0f), treeTopRotate[i]); // skipping rotation, not needed otherwise here
 			treeModel = glm::scale(treeModel, treeTopScale[i]);
 			lightingShader.setMat4("model", treeModel);
 
@@ -677,7 +664,6 @@ int main() {
 
 			glBindVertexArray(treeVAO);
 			glDrawElements(GL_TRIANGLES, indsAmount, GL_UNSIGNED_INT, NULL);
-			// glDrawArrays(GL_TRIANGLES, 0, vertsAmount); // dont use this
 		}
 		
 
